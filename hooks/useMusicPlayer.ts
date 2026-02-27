@@ -224,12 +224,18 @@ export const useMusicPlayer = () => {
         // Create an invisible div to hold the iframe
         const div = document.createElement('div');
         div.id = 'yt-invisible-player';
-        div.style.display = 'none'; // Keep it hidden
+        // IMPORTANT: DO NOT USE display: none. iOS Safari and Mobile Chrome
+        // will aggressively block autoplay if the iframe is completely hidden.
+        div.style.position = 'absolute';
+        div.style.top = '-9999px';
+        div.style.left = '-9999px';
+        div.style.width = '1px';
+        div.style.height = '1px';
         document.body.appendChild(div);
 
         ytPlayerRef.current = new window.YT.Player('yt-invisible-player', {
-          height: '0',
-          width: '0',
+          height: '1',
+          width: '1',
           videoId: '',
           playerVars: {
             autoplay: 1,
@@ -278,6 +284,17 @@ export const useMusicPlayer = () => {
 
   const playSong = useCallback(
     (track: Track, newQueue?: Track[]) => {
+      // SYNCHRONOUS MOBILE AUTOPLAY FIX
+      // Mobile Safari/Chrome require media playback to start *synchronously*
+      // within the click event handler. The setTimeout below breaks this chain.
+      if (playerReadyRef.current && ytPlayerRef.current) {
+        try {
+          ytPlayerRef.current.loadVideoById(track.videoId);
+        } catch (e) {
+          console.warn('Mobile sync play failed:', e);
+        }
+      }
+
       let q = newQueue || [track];
       // If we're currently shuffled and given a new queue, shuffle the new queue.
       if (newQueue) {

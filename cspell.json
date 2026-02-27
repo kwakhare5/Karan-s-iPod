@@ -13,7 +13,20 @@
     "unmount",
     "ytmusic",
     "bestaudio",
-    "noplaylist"
+    "noplaylist",
+    "UNSTARTED",
+    "disablekb",
+    "KHTML",
+    "fmap",
+    "hdrs",
+    "Referer",
+    "favs",
+    "Csvg",
+    "Crect",
+    "invidious",
+    "piped",
+    "cors",
+    "Open-Meteo"
   ],
   "ignorePaths": [
     "node_modules/",
