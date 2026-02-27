@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+﻿import React, { useRef, useEffect, useCallback } from 'react';
 
 interface UseClickWheelProps {
   onScroll: (direction: 'cw' | 'ccw') => void;

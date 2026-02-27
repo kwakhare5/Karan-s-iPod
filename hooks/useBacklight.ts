@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+﻿import { useState, useCallback, useEffect, useRef } from 'react';
 
 export type BacklightTimeout = 5 | 10 | 20 | 0; // 0 = always on
 

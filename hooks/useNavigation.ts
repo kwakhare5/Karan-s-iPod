@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+﻿import { useState, useCallback, useRef, useEffect } from 'react';
 import { MenuIDs, NavigationState } from '../src/types';
 
 export const useNavigation = () => {

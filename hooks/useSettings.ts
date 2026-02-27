@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ClockSettings } from '../src/types';
 
 export interface FavoriteTrack {

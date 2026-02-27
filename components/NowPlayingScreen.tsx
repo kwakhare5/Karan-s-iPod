@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+﻿import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Track } from '../src/types';
 import { StatusBar } from './StatusBar';
 import { Shuffle, Repeat, Heart, Loader2 } from 'lucide-react';

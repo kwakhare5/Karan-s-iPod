@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+﻿import React, { useRef, useEffect } from 'react';
 import { MenuItem } from '../src/types';
 import { StatusBar } from './StatusBar';
 import { ChevronRight } from 'lucide-react';

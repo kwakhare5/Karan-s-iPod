@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 
 # Add the project root to sys.path so we can import server.py

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useClickWheel } from '../hooks/useClickWheel';
 import { SkipBack, SkipForward, Play, Pause } from 'lucide-react';
 

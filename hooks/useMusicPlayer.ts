@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+﻿import { useState, useRef, useCallback, useEffect } from 'react';
 import { Track } from '../src/types';
 import { searchSongs } from '../src/utils/musicApi';
 
@@ -177,8 +177,16 @@ export const useMusicPlayer = () => {
       switch (event.data) {
         case YT_STATE.PLAYING:
           // Force volume update whenever playback starts to ensure consistency across devices
+          // We use a small delay because some browsers ignore setVolume if called too soon after load
           if (ytPlayerRef.current) {
-            ytPlayerRef.current.setVolume(state.volume * 100);
+            const currentVol = state.volume;
+            ytPlayerRef.current.setVolume(currentVol * 100);
+            // Secondary enforcement after a small delay
+            setTimeout(() => {
+              if (ytPlayerRef.current && typeof ytPlayerRef.current.setVolume === 'function') {
+                ytPlayerRef.current.setVolume(currentVol * 100);
+              }
+            }, 500);
           }
           setState((prev) => ({
             ...prev,
@@ -286,6 +294,21 @@ export const useMusicPlayer = () => {
       if (interval) clearInterval(interval);
     };
   }, [state.isPlaying]);
+
+  // Volume synchronization effect
+  useEffect(() => {
+    if (
+      playerReadyRef.current &&
+      ytPlayerRef.current &&
+      typeof ytPlayerRef.current.setVolume === 'function'
+    ) {
+      try {
+        ytPlayerRef.current.setVolume(state.volume * 100);
+      } catch (e) {
+        console.warn('Volume sync failed:', e);
+      }
+    }
+  }, [state.volume]);
 
   // PUBLIC API
 

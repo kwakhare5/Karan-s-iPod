@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { StatusBar } from './StatusBar';
 import { Search, Loader2 } from 'lucide-react';
 import { Track } from '../src/types';
