@@ -1,5 +1,6 @@
 // utils/musicApi.ts
 import { API_BASE_URL } from '../constants';
+import { fetchPipedAudioUrl } from './pipes';
 
 // ───── Types ─────
 export interface Song {
@@ -45,6 +46,7 @@ export async function searchSongs(query: string): Promise<Song[]> {
 
 // ───── Get Audio URL ─────
 export async function getAudioUrl(videoId: string): Promise<string | null> {
-  // Since server.py redirects to the audio URL, we can just return this endpoint
   return `${API_BASE_URL}/api/stream/${videoId}`;
 }
+
+export { fetchPipedAudioUrl };

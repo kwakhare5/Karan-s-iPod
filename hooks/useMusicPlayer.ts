@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Track } from '../src/types';
-import { getAudioUrl, searchSongs } from '../src/utils/musicApi';
+import { getAudioUrl, searchSongs, fetchPipedAudioUrl } from '../src/utils/musicApi';
 
 export interface MusicPlayerState {
   currentTrack: Track | null;
@@ -19,6 +19,7 @@ export interface MusicPlayerState {
 export const useMusicPlayer = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prefetchCache = useRef<Record<string, string>>({}); // Store pre-fetched stream URLs
+  const retryState = useRef({ videoId: '', sourceIndex: 0 });
 
   const [state, setState] = useState<MusicPlayerState>({
     currentTrack: null,
@@ -53,13 +54,37 @@ export const useMusicPlayer = () => {
       setState((prev) => ({ ...prev, duration: audio.duration || 0 }));
     };
 
-    const onError = () => {
-      console.error('[Audio Error]', audio.error);
+    const onError = async () => {
+      const { videoId, sourceIndex } = retryState.current;
+      console.error(`[Audio Error] Source ${sourceIndex} failed:`, audio.error);
+
+      // Attempt Fallback
+      if (sourceIndex === 0 && videoId) {
+        console.log('Attempting Piped Fallback...');
+        setState((prev) => ({ ...prev, isLoading: true, error: 'Connecting to backup server...' }));
+
+        try {
+          const fallbackUrl = await fetchPipedAudioUrl(videoId);
+          if (fallbackUrl) {
+            retryState.current.sourceIndex = 1;
+            audio.src = fallbackUrl;
+            audio.load();
+            await audio.play();
+            return;
+          }
+        } catch (err) {
+          console.error('Fallback failed:', err);
+        }
+      }
+
       setState((prev) => ({
         ...prev,
         isPlaying: false,
         isLoading: false,
-        error: 'Playback failed. Try again.',
+        error:
+          sourceIndex === 0
+            ? 'Playback failed. Try again.'
+            : 'All sources failed. YouTube may be down.',
       }));
     };
 
@@ -105,6 +130,8 @@ export const useMusicPlayer = () => {
         currentTime: 0,
         duration: track.duration || 0,
       }));
+
+      retryState.current = { videoId: track.videoId, sourceIndex: 0 };
 
       try {
         // Instantly use pre-fetched URL if available
@@ -255,6 +282,8 @@ export const useMusicPlayer = () => {
         queue: effectiveQueue,
         queueIndex: effectiveIndex,
       }));
+
+      retryState.current = { videoId: track.videoId, sourceIndex: 0 };
 
       try {
         // Instantly use pre-fetched URL if available

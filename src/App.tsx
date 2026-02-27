@@ -13,7 +13,7 @@ import { useBacklight, BACKLIGHT_OPTIONS } from '../hooks/useBacklight';
 import { useContacts } from '../hooks/useContacts';
 import { useNotes } from '../hooks/useNotes';
 import { useMusicPlayer } from '../hooks/useMusicPlayer';
-import { searchSongs } from './utils/musicApi';
+import { searchSongs, Song } from './utils/musicApi';
 import { Artist } from './types';
 
 const CHASSIS_GRADIENTS: Record<string, string> = {
@@ -318,7 +318,7 @@ const App = () => {
       setIsGlobalSearchLoading(true);
       try {
         const results = await searchSongs(query);
-        const tracks: Track[] = results.map((item) => ({
+        const tracks: Track[] = results.map((item: Song) => ({
           videoId: item.id,
           title: item.title,
           artist: item.artist,

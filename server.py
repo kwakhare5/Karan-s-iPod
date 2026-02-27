@@ -224,20 +224,31 @@ def stream(video_id):
 
                 # Proxy the audio stream to bypass IP-locking
                 req = requests.get(audio_url, headers=headers, stream=True)
-                
+
                 if req.status_code in [403, 401]:
-                    return jsonify({'error': 'Audio stream access forbidden (403)'}), req.status_code
+                    return jsonify({
+                        'error': 'Audio stream access forbidden (403)'
+                    }), req.status_code
 
                 def generate():
                     for chunk in req.iter_content(chunk_size=8192):
                         if chunk:
                             yield chunk
 
-                res = Response(stream_with_context(generate()), status=req.status_code)
-                for key in ['Content-Type', 'Content-Length', 'Content-Range', 'Accept-Ranges']:
+                res = Response(
+                    stream_with_context(generate()), 
+                    status=req.status_code
+                )
+                headers_to_proxy = [
+                    'Content-Type', 
+                    'Content-Length', 
+                    'Content-Range', 
+                    'Accept-Ranges'
+                ]
+                for key in headers_to_proxy:
                     if key in req.headers:
                         res.headers[key] = req.headers[key]
-                
+
                 return res
         return jsonify({'error': 'Extraction failed'}), 500
     except Exception as e:
