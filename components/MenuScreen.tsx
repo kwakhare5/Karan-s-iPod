@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { MenuItem } from '../types';
+import { MenuItem } from '../src/types';
 import { StatusBar } from './StatusBar';
 import { ChevronRight } from 'lucide-react';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from './StatusBar';
 import { Search, Loader2 } from 'lucide-react';
-import { Track } from '../types';
+import { Track } from '../src/types';
 
 interface SearchScreenProps {
   selectedIndex: number;

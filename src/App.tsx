@@ -251,8 +251,8 @@ const App = () => {
             const j = Math.floor(Math.random() * (i + 1));
             [allSongs[i], allSongs[j]] = [allSongs[j], allSongs[i]];
           }
-          music.setShuffle(true);
-          music.play(allSongs[0], allSongs, 0);
+          // Use toggleShuffle if needed, but here we just play from queue
+          music.playSong(allSongs[0], allSongs);
           navigateTo(MenuIDs.NOW_PLAYING);
         }
       }
@@ -265,15 +265,16 @@ const App = () => {
    * Play a song or navigate to Now Playing if it's already playing
    */
   const playOrNavigate = useCallback(
-    (track: Track, queue: Track[], index: number) => {
+    (track: Track, queue: Track[], _index?: number) => {
       // If clicking the same song that's already playing, just go to Now Playing screen
       if (music.currentTrack && music.currentTrack.videoId === track.videoId) {
         navigateTo(MenuIDs.NOW_PLAYING);
         return;
       }
 
-      music.setShuffle(false);
-      music.play(track, queue, index);
+      // Make sure shuffle is off if it was on
+      if (music.isShuffled) music.toggleShuffle();
+      music.playSong(track, queue);
       navigateTo(MenuIDs.NOW_PLAYING);
     },
     [music, navigateTo]
@@ -344,10 +345,10 @@ const App = () => {
   }, [music]);
 
   const handleNext = useCallback(() => {
-    music.next();
+    music.nextTrack();
   }, [music]);
   const handlePrev = useCallback(() => {
-    music.prev();
+    music.prevTrack();
   }, [music]);
 
   const handleToggleLike = useCallback(() => {
@@ -975,7 +976,7 @@ const App = () => {
         onToggleShuffle={music.toggleShuffle}
         onToggleRepeat={music.toggleRepeat}
         onToggleLike={handleToggleLike}
-        onSeek={music.seek}
+        onSeek={music.seekTo}
         volume={music.volume}
         queueIndex={music.queueIndex}
         queueLength={music.queue.length}

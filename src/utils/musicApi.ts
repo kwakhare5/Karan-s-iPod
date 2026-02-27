@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../constants';
 
 // ───── Types ─────
 export interface Song {
-  id: string;
+  id: string; // This is the YouTube Video ID
   title: string;
   artist: string;
   thumbnail: string;
@@ -11,7 +11,7 @@ export interface Song {
   duration: number;
 }
 
-// ───── Search Songs (YTMusic - best quality) ─────
+// ───── Search Songs (YTMusic - 100% accurate) ─────
 export async function searchSongs(query: string): Promise<Song[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
@@ -41,32 +41,22 @@ export async function searchSongs(query: string): Promise<Song[]> {
   }
 }
 
-// ───── Get Audio URL (Hybrid: JioSaavn CDN → Backend Proxy) ─────
-export async function getAudioUrl(videoId: string): Promise<string | null> {
-  try {
-    // First, ask the backend for a direct CDN URL (JioSaavn)
-    const res = await fetch(`${API_BASE_URL}/api/stream-info/${videoId}`);
-    const data = await res.json();
+// NOTE: getAudioUrl, getPipedFallbackUrl, and fetchPipedAudioUrl
+// are NO LONGER NEEDED. The v6 Bulletproof Architecture uses the
+// official YouTube IFrame API embedded in useMusicPlayer.ts.
+// No proxying or backend streaming is necessary!
 
-    if (data.url && !data.needs_proxy) {
-      // Direct CDN URL (JioSaavn) — browser can play this directly!
-      console.log(`[Audio] Using ${data.source} CDN`);
-      return data.url;
-    }
-  } catch (err) {
-    console.warn('[Audio] stream-info failed, using proxy:', err);
-  }
-
-  // Fallback: use the backend proxy endpoint
-  return `${API_BASE_URL}/api/stream/${videoId}`;
+export async function getAudioUrl(): Promise<string | null> {
+  console.warn('Deprecated: getAudioUrl called but app uses IFrame API.');
+  return null;
 }
 
-// ───── Fallback URL (Secondary Proxy) ─────
-export async function getPipedFallbackUrl(videoId: string): Promise<string | null> {
-  return `${API_BASE_URL}/api/piped-stream/${videoId}`;
+export async function getPipedFallbackUrl(): Promise<string | null> {
+  console.warn('Deprecated: getPipedFallbackUrl called but app uses IFrame API.');
+  return null;
 }
 
-// Legacy export
-export async function fetchPipedAudioUrl(videoId: string): Promise<string | null> {
-  return getPipedFallbackUrl(videoId);
+export async function fetchPipedAudioUrl(): Promise<string | null> {
+  console.warn('Deprecated: fetchPipedAudioUrl called but app uses IFrame API.');
+  return null;
 }

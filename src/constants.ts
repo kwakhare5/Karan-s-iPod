@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { MenuIDs, MenuItem } from './types';
 
 // API Base URL - uses environment variable in production, localhost in development
