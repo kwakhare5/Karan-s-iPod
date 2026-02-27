@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, stream_with_context
 import requests
 from flask_cors import CORS
 import json
@@ -216,13 +216,29 @@ def stream(video_id):
                 audio_url = info.get('url')
 
             if audio_url:
+                # Forward the Range header to YouTube for seeking
+                headers = {}
+                range_header = request.headers.get('Range')
+                if range_header:
+                    headers['Range'] = range_header
+
                 # Proxy the audio stream to bypass IP-locking
-                req = requests.get(audio_url, stream=True)
-                return Response(
-                    req.iter_content(chunk_size=1024),
-                    content_type=req.headers.get('Content-Type'),
-                    status=req.status_code
-                )
+                req = requests.get(audio_url, headers=headers, stream=True)
+                
+                if req.status_code in [403, 401]:
+                    return jsonify({'error': 'Audio stream access forbidden (403)'}), req.status_code
+
+                def generate():
+                    for chunk in req.iter_content(chunk_size=8192):
+                        if chunk:
+                            yield chunk
+
+                res = Response(stream_with_context(generate()), status=req.status_code)
+                for key in ['Content-Type', 'Content-Length', 'Content-Range', 'Accept-Ranges']:
+                    if key in req.headers:
+                        res.headers[key] = req.headers[key]
+                
+                return res
         return jsonify({'error': 'Extraction failed'}), 500
     except Exception as e:
         traceback.print_exc()
