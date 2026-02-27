@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: karan-ipod
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt && npm install && npm run build && mkdir -p static && rm -rf static/* && cp -r dist/* static/
+    startCommand: python server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: NODE_VERSION
+        value: 18.0.0
+      - key: PORT
+        value: 10000

@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "words": [
+    "Karan",
+    "Karan's",
+    "Wakhare",
+    "kwakhare",
+    "ytmusicapi",
+    "venv",
+    "pytest",
+    "ipod",
+    "backlight",
+    "unmount",
+    "ytmusic",
+    "bestaudio",
+    "noplaylist"
+  ],
+  "ignorePaths": [
+    "node_modules/",
+    "dist/",
+    ".venv/",
+    "venv/",
+    "*.min.js",
+    "package-lock.json",
+    ".git/",
+    ".husky/"
+  ],
+  "allowCompoundWords": true,
+  "language": "en"
+}
