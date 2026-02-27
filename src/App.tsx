@@ -177,6 +177,22 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    // Keep-alive ping every 10 minutes (600,000 ms)
+    const pingBackend = async () => {
+      try {
+        await fetch(`${API_BASE_URL}/api/ping`);
+        console.log('Keep-alive ping successful');
+      } catch (err) {
+        console.warn('Keep-alive ping failed', err);
+      }
+    };
+
+    const interval = setInterval(pingBackend, 600000);
+    pingBackend(); // Initial ping
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     // Wrap in timeout to avoid synchronous state update warning
     const t = setTimeout(() => {
       fetchLibrary();
@@ -833,6 +849,7 @@ const App = () => {
     fetchLibrary,
     renamePlaylist,
     deletePlaylist,
+    playOrNavigate,
     music,
   ]);
 

@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify, Response
+import requests
 from flask_cors import CORS
 import json
 import traceback
@@ -215,7 +216,13 @@ def stream(video_id):
                 audio_url = info.get('url')
 
             if audio_url:
-                return redirect(audio_url)
+                # Proxy the audio stream to bypass IP-locking
+                req = requests.get(audio_url, stream=True)
+                return Response(
+                    req.iter_content(chunk_size=1024),
+                    content_type=req.headers.get('Content-Type'),
+                    status=req.status_code
+                )
         return jsonify({'error': 'Extraction failed'}), 500
     except Exception as e:
         traceback.print_exc()
@@ -242,6 +249,11 @@ def api_status():
 @app.route('/favicon.ico')
 def favicon():
     return '', 204
+
+
+@app.route('/api/ping')
+def ping():
+    return jsonify({'status': 'ok', 'message': 'pong'})
 
 
 # ── Serve Public JSON Files ──
