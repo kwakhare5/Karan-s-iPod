@@ -200,6 +200,15 @@ def stream(video_id):
 def serve_frontend():
     return app.send_static_file('index.html')
 
+# ── Serve Public JSON Files ──
+@app.route('/top_songs.json')
+def serve_top_songs():
+    return app.send_static_file('top_songs.json')
+
+@app.route('/top_artists.json')
+def serve_top_artists():
+    return app.send_static_file('top_artists.json')
+
 @app.route('/<path:path>')
 def serve_static(path):
     # Serve static files from dist, fallback to index.html for SPA routing

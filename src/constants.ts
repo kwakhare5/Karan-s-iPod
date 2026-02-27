@@ -1,6 +1,7 @@
 import { MenuIDs, MenuItem } from './types';
 
-export const API_BASE_URL = 'http://localhost:5001';
+// API Base URL - uses environment variable in production, localhost in development
+export const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
 
 export const ROOT_MENUS: Record<string, MenuItem[]> = {
   [MenuIDs.HOME]: [
