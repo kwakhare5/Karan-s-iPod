@@ -1,4 +1,5 @@
 // utils/musicApi.ts
+import { API_BASE_URL } from '../constants';
 
 // ───── Types ─────
 export interface Song {
@@ -13,7 +14,7 @@ export interface Song {
 // ───── Search Songs ─────
 export async function searchSongs(query: string): Promise<Song[]> {
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
     const data = await res.json();
 
     // server.py returns { results: [...] }
@@ -45,5 +46,5 @@ export async function searchSongs(query: string): Promise<Song[]> {
 // ───── Get Audio URL ─────
 export async function getAudioUrl(videoId: string): Promise<string | null> {
   // Since server.py redirects to the audio URL, we can just return this endpoint
-  return `/api/stream/${videoId}`;
+  return `${API_BASE_URL}/api/stream/${videoId}`;
 }

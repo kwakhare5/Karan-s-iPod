@@ -129,13 +129,13 @@ const App = () => {
 
       const initialSongs = cachedSongs ? JSON.parse(cachedSongs) : [];
 
-      const artRes = await fetch('/api/library/artists').catch(() => null);
+      const artRes = await fetch(`${API_BASE_URL}/api/library/artists`).catch(() => null);
       let artData = artRes?.ok ? await artRes.json() : [];
 
       // Always pull top_artists.json if both API and local cache are missing or zero
       if (artData.length === 0) {
         try {
-          const topRes = await fetch('/top_artists.json');
+          const topRes = await fetch(`${API_BASE_URL}/top_artists.json`);
           if (topRes.ok) artData = await topRes.json();
         } catch (err) {
           console.log('Failed to load top artists seed', err);
@@ -157,7 +157,7 @@ const App = () => {
       // Always pull top_songs.json if API returned nothing
       if (songData.length === 0) {
         try {
-          const topSongsRes = await fetch('/top_songs.json');
+          const topSongsRes = await fetch(`${API_BASE_URL}/top_songs.json`);
           if (topSongsRes.ok) songData = await topSongsRes.json();
         } catch (err) {
           console.log('Failed to load top songs seed', err);
@@ -248,17 +248,20 @@ const App = () => {
   /**
    * Play a song or navigate to Now Playing if it's already playing
    */
-  const playOrNavigate = useCallback((track: Track, queue: Track[], index: number) => {
-    // If clicking the same song that's already playing, just go to Now Playing screen
-    if (music.currentTrack && music.currentTrack.videoId === track.videoId) {
-      navigateTo(MenuIDs.NOW_PLAYING);
-      return;
-    }
+  const playOrNavigate = useCallback(
+    (track: Track, queue: Track[], index: number) => {
+      // If clicking the same song that's already playing, just go to Now Playing screen
+      if (music.currentTrack && music.currentTrack.videoId === track.videoId) {
+        navigateTo(MenuIDs.NOW_PLAYING);
+        return;
+      }
 
-    music.setShuffle(false);
-    music.play(track, queue, index);
-    navigateTo(MenuIDs.NOW_PLAYING);
-  }, [music, navigateTo]);
+      music.setShuffle(false);
+      music.play(track, queue, index);
+      navigateTo(MenuIDs.NOW_PLAYING);
+    },
+    [music, navigateTo]
+  );
 
   const handleSearchSelect = useCallback(
     (track: Track, results: Track[]) => {
