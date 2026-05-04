@@ -1,160 +1,154 @@
 # 🎵 Karan's iPod
 
-> **Return to the golden era of portable music.** 
+<p align="center">
+  <img src="screenshots/ipod_preview.png" width="600" alt="Karan's iPod Preview">
+</p>
 
-![Karan's iPod Preview](screenshots/ipod_preview.png)
+<p align="center">
+  <b>Return to the golden era of portable music.</b><br>
+  A pixel-perfect, hardware-native iPod Classic emulator built with modern web technologies.
+</p>
 
-A beautifully-crafted, retro iPod-inspired music streaming interface built with modern web technologies. Navigate your music library with the classic click wheel, stream directly from YouTube Music, and enjoy a nostalgic UI that looks perfect on both mobile and desktop.
-
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![React](https://img.shields.io/badge/Frontend-React%2019-61dafb.svg?logo=react)
-![Python](https://img.shields.io/badge/Backend-Python%20Flask-3776AB.svg?logo=python)
-
-### 🚀 [Live Demo](https://karan-s-ipod.vercel.app/) (Deployed on Vercel)
+<p align="center">
+  <img src="https://img.shields.io/badge/Version-3.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  <img src="https://img.shields.io/badge/React-19-61dafb.svg?logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Vite-6-646cff.svg?logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB.svg?logo=python" alt="Python">
+</p>
 
 ---
 
 ## ✨ Features
 
-- **Classic Click Wheel Navigation:** Relive the nostalgia with fully functional scroll-and-click UI mechanics.
-- **YouTube Music Integration:** Search, browse, and stream your favorite songs seamlessly.
-- **Responsive Design:** Optimized for both desktop displays and mobile touch screens.
-- **Library Management:** Create playlists, save favorite songs, and manage your library just like the original device.
-- **Extras included:** Features a built-in clock, minimal contacts app, notes, and custom settings.
-- **Cold-Start Protection:** Setup guide included (`KEEP-AWAKE-INSTRUCTIONS.md`) to run a Google Apps Script that keeps the Render free-tier backend awake 24/7 without a credit card.
-
-## 🎮 How to Navigate
-
-The iPod interface is designed to be intuitive and tactile.
-
-- **Scroll (Click Wheel)**: Move your mouse (or finger on mobile) in a circular motion around the wheel to scroll through lists.
-- **Menu (Top Button)**: Go back to the previous screen.
-- **Select (Center Button)**: Enter a menu or play a song.
-- **Play/Pause (Bottom Button)**: Toggle music playback.
-- **Skip/Previous (Side Buttons)**: Jump between tracks.
-
-
-## 🛠️ Technology Stack
-
-We paired the best of modern tools to deliver a smooth retro experience:
-
-| **Domain** | **Technology** |
-|:--- |:---|
-| **Frontend** | React 19, TypeScript, Vite |
-| **Backend** | Python 3.11, Flask |
-| **API Integration** | YouTube Music via `ytmusicapi` |
-| **Streaming Engine** | `yt-dlp` |
-| **Deployment** | Render, Vercel |
+- **🎯 Hardware-Native Interaction**: Fully functional ClickWheel with high-fidelity circular scroll-and-click mechanics.
+- **🎧 Seamless Streaming**: Direct integration with YouTube Music via a specialized Python bridge (`ytmusicapi` + `yt-dlp`).
+- **📱 Responsive Excellence**: Optimized for desktop mouse interaction and mobile touch gestures with pixel-perfect integer alignment.
+- **📦 Full Ecosystem**: Includes a built-in Music Player, Search, Library Management, Clock, Notes, and a Contacts app.
+- **⚡ Performance First**: Built with Vite and React 19 for instantaneous navigation and smooth 60fps animations.
+- **🛠️ Self-Healing Backend**: Automated keep-awake strategy to prevent free-tier sleep on hosting providers.
 
 ---
 
-## 💻 Local Development
+## 🎮 Navigation Guide
 
-Want to run this project on your own machine? It takes just a few steps.
+The interface is designed to be tactile and intuitive, mirroring the original device logic.
+
+- **Wheel Scroll**: Move your mouse or finger in a circular motion around the wheel to navigate lists.
+- **MENU Button**: Navigate back to the previous screen or root menu.
+- **Center Button**: Select items, enter sub-menus, or play highlighted tracks.
+- **PLAY/PAUSE**: Instant playback toggle from any screen.
+- **Next/Prev**: Skip tracks or jump back with dedicated hardware-mapped buttons.
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-Make sure you have installed:
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [Python](https://www.python.org/downloads/) (v3.11 or higher)
 
-### Installation & Setup
+- **Node.js** (v18+)
+- **Python** (v3.11+)
 
-1. **Clone the repository:**
+### Installation
+
+1. **Clone the Project**
+
    ```bash
    git clone https://github.com/kwakhare5/Karan-s-Ipod.git
    cd Karan-s-Ipod
    ```
 
-2. **Install Frontend Dependencies:**
+2. **Setup Frontend**
+
    ```bash
    npm install
    ```
 
-3. **Install Backend Dependencies:**
+3. **Setup Backend**
+
    ```bash
    pip install -r backend/requirements.txt
    ```
 
-4. **Environment Variables:**
-   Copy the example environment file and customize it.
-   ```bash
-   cp .env.example .env.local
-   # Don't forget to add your GEMINI_API_KEY inside .env.local!
+4. **Environment Configuration**
+   Create a `.env.local` file in the root and add your keys:
+   ```env
+   GEMINI_API_KEY=your_key_here
    ```
 
-### Running the App
+### Running Locally
 
-You'll need two terminal windows to run the frontend and backend simultaneously:
+Open two terminals and run:
 
-**Terminal 1 (Backend - Flask)**
+**Terminal 1: Backend**
+
 ```bash
-# We run from the root so the backend can find the static files in public/
-python backend/server.py
+npm run backend
 ```
 
-**Terminal 2 (Frontend - Vite)**
+**Terminal 2: Frontend**
+
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser to see the app running!
+Visit **[localhost:5173](http://localhost:5173)** to start your journey.
 
 ---
 
-## 🗂️ Project Architecture
+## 🏗️ Architecture
 
-A quick look at how the repository is organized:
+```mermaid
+graph TD
+    A[React Frontend] -->|API Requests| B[Python Flask API]
+    B -->|ytmusicapi| C[YouTube Music Data]
+    B -->|yt-dlp| D[Audio Stream]
+    A -->|Local Storage| E[iPod Persistence]
+    B -->|Gemini AI| F[Smart Recommendations]
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer           | Technology                                |
+| :-------------- | :---------------------------------------- |
+| **Framework**   | React 19 (Functional Components + Hooks)  |
+| **Language**    | TypeScript (Strict Mode)                  |
+| **Styling**     | Tailwind CSS (Utility-First Architecture) |
+| **Build Tool**  | Vite                                      |
+| **Backend**     | Python 3.11 / Flask                       |
+| **Audio**       | yt-dlp & ytmusicapi                       |
+| **Persistence** | LocalStorage (iPod Native Persistence)    |
+
+---
+
+## 📁 Project Structure
 
 ```text
 Karan's iPod/
-├── backend/              # Unified Python Backend
-│   ├── scripts/          # Library automation & maintenance
-│   └── server.py         # Main Flask API
-├── src/                  # Frontend Source (React + TS)
-│   ├── components/       # Reusable UI (ClickWheel, Screen, etc.)
-│   ├── hooks/            # Logic & State (useMusicPlayer, etc.)
-│   └── utils/            # API & Formatting utilities
-├── public/               # Static assets & seed data
-├── render.yaml           # Backend deployment config (Render)
-└── package.json          # Frontend dependencies & scripts
+├── src/
+│   ├── features/         # Domain-driven feature modules
+│   │   ├── music/        # Player, Search, Library
+│   │   ├── navigation/   # ClickWheel, Router, Menus
+│   │   ├── settings/     # Appearance, System Config
+│   │   └── extras/       # Notes, Contacts, Clock
+│   └── shared/           # Cross-cutting components & types
+├── backend/              # Unified Python API & Scripts
+├── public/               # High-fidelity assets & seed data
+└── package.json          # Dependency management
 ```
 
-## 📸 Including Images
+---
 
-To add images to this README (like screenshots of the app), follow these steps:
+## 📄 License & Credits
 
-1.  **Upload the image** to your GitHub repository (e.g., in a `screenshots/` folder).
-2.  **Use the standard Markdown syntax**:
-    `![Alt Text](path/to/image.png)`
-3.  **For centered images with specific width**, use HTML:
-    `<img src="path/to/image.png" width="400" alt="iPod Screenshot">`
-
+- This project is licensed under the **MIT License**.
+- Visually inspired by the iconic **Apple iPod Classic**.
+- Developed with meticulous attention to detail by **Karan**.
 
 ---
 
-## 🚀 Deployment
-
-This project is configured to be deployed easily on platforms like Render or Vercel.
-
-**Render (Recommended):** The repository includes a `render.yaml` file that automatically configures the web service, installs both Python and Node.js dependencies, builds the frontend, and starts the Flask server.
-
-**Vercel:** A `vercel.json` is also included if you prefer hosting the front-end independently.
-
----
-
-## 🛡️ Maintenance
-
-Both services are configured for **Auto-Deployment** on GitHub push:
-- **Render**: Handles the Python backend and keep-alive strategy.
-- **Vercel**: Hosts the high-performance React frontend.
-
-
----
-
-## 📄 License & Acknowledgments
-
-- This project is licensed under the [MIT License](LICENSE).
-- Visually inspired by the classic Apple iPod device.
-- Built with ❤️ by Karan.
-
----
+<p align="center">
+  Built with ❤️ for the nostalgic music lover.
+</p>
