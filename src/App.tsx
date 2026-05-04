@@ -916,7 +916,7 @@ const App = () => {
           <div
             className="absolute overflow-hidden"
             style={{
-              top: '24px',
+              top: '20px',
               left: '12px',
               width: '310px',
               height: '340px',

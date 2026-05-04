@@ -118,7 +118,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = React.memo(
                     className="flex-1 overflow-hidden"
                     style={{ display: 'flex', whiteSpace: 'nowrap' }}
                   >
-                    <span className="text-[16px] font-semibold tracking-[-0.015em] truncate flex-1">
+                    <span className="text-[18px] font-semibold tracking-[-0.015em] truncate flex-1">
                       {item.label}
                     </span>
                   </div>
