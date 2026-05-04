@@ -40,13 +40,6 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     inputRef.current?.focus();
   }, []);
 
-  // Ensure search is triggered if there's a query but no results (e.g., when navigating back)
-  useEffect(() => {
-    if (query.trim().length >= 2 && results.length === 0) {
-      onSearch(query);
-    }
-  }, [query, results.length, onSearch]);
-
   // Handle direct user scroll on the container (touch/mouse scroll)
   useEffect(() => {
     const container = scrollRef.current;
@@ -94,7 +87,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     } else if (isItemBelowView) {
       container.scrollTop = Math.min(
         container.scrollHeight - containerHeight,
-        itemTop + itemHeight - containerHeight
+        itemTop + itemHeight - containerHeight,
       );
     }
   }, [selectedIndex, results.length]);

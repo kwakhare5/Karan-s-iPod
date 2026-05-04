@@ -18,7 +18,6 @@ import { BootScreen } from '@shared/components/BootScreen';
 import { NoteEditor } from '@features/extras/components/NoteEditor';
 import { LocationPicker } from '@features/settings/components/LocationPicker';
 
-
 const CHASSIS_GRADIENTS: Record<string, string> = {
   silver: 'linear-gradient(197.05deg, #E2E2E2 3.73%, #AEAEAE 94.77%)',
   blue: 'linear-gradient(197.05deg, #a1c4fd 3.73%, #5e99e8 94.77%)',
@@ -27,14 +26,13 @@ const CHASSIS_GRADIENTS: Record<string, string> = {
   red: 'linear-gradient(197.05deg, #ff5252 3.73%, #d32f2f 94.77%)',
 };
 
-
 const App = () => {
   const calculateScale = () => {
     if (typeof window === 'undefined') return 0.75;
     const isMobile = window.innerWidth < 768;
-    // We use a larger padding on desktop (48) vs mobile (16) to ensure the 
+    // We use a larger padding on desktop (48) vs mobile (16) to ensure the
     // iPod chassis has sufficient 'breathing room' on larger displays.
-    const padding = isMobile ? 16 : 48; 
+    const padding = isMobile ? 16 : 48;
 
     // Use visualViewport if available for more accurate mobile dimensions (accounts for keyboard/bars)
     const viewWidth = window.visualViewport?.width || window.innerWidth;
@@ -59,7 +57,6 @@ const App = () => {
   }, []);
 
   // Removed fixed timeout to sync booting with server wake state
-
 
   // -- State Hooks --
   const { navState, navigateTo, goBack, selectIndex, scroll } = useNavigation();
@@ -126,57 +123,65 @@ const App = () => {
     return [...librarySongs].sort((a, b) => a.title.localeCompare(b.title));
   }, [librarySongs]);
 
-  // We hydrate the library from localStorage first to provide an 
+  // We hydrate the library from localStorage first to provide an
   // 'instant-on' feel, then sync with the server in the background.
   const fetchLibrary = useCallback(async () => {
     try {
       const cachedSongs = localStorage.getItem('ipod_library_songs');
       const initialSongs = cachedSongs ? JSON.parse(cachedSongs) : [];
-      
+
       const cachedArtists = localStorage.getItem('ipod_library_artists');
       const initialArtists = cachedArtists ? JSON.parse(cachedArtists) : [];
 
       if (Array.isArray(initialArtists) && initialArtists.length > 0) {
         setLibraryArtists(initialArtists);
       } else {
-        fetch('/top_artists.json').then(r => r.json()).then(d => {
-          if (Array.isArray(d)) setLibraryArtists(d);
-        }).catch(err => console.warn('Silent catch fallback:', err));
+        fetch('/top_artists.json')
+          .then((r) => r.json())
+          .then((d) => {
+            if (Array.isArray(d)) setLibraryArtists(d);
+          })
+          .catch((err) => console.warn('Silent catch fallback:', err));
       }
 
       if (Array.isArray(initialSongs) && initialSongs.length > 0) {
         setLibrarySongs(initialSongs);
       } else {
-        fetch('/top_songs.json').then(r => r.json()).then(d => {
-          if (Array.isArray(d)) setLibrarySongs(d);
-        }).catch(err => console.warn('Silent catch fallback:', err));
+        fetch('/top_songs.json')
+          .then((r) => r.json())
+          .then((d) => {
+            if (Array.isArray(d)) setLibrarySongs(d);
+          })
+          .catch((err) => console.warn('Silent catch fallback:', err));
       }
 
       // Async fetch to update cache in background
       fetch(`${API_BASE_URL}/api/library/artists`)
-        .then(res => res.ok ? res.json() : [])
-        .then(data => {
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             setLibraryArtists(data);
             localStorage.setItem('ipod_library_artists', JSON.stringify(data));
           }
-        }).catch(err => console.warn('Silent catch fallback:', err));
+        })
+        .catch((err) => console.warn('Silent catch fallback:', err));
 
       fetch(`${API_BASE_URL}/api/playlists`)
-        .then(res => res.ok ? res.json() : [])
-        .then(data => {
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
           if (Array.isArray(data)) setPlaylists(data);
-        }).catch(err => console.warn('Silent catch fallback:', err));
+        })
+        .catch((err) => console.warn('Silent catch fallback:', err));
 
       fetch(`${API_BASE_URL}/api/library/songs`)
-        .then(res => res.ok ? res.json() : [])
-        .then(data => {
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             setLibrarySongs(data);
             localStorage.setItem('ipod_library_songs', JSON.stringify(data));
           }
-        }).catch(err => console.warn('Silent catch fallback:', err));
-
+        })
+        .catch((err) => console.warn('Silent catch fallback:', err));
     } catch (e) {
       console.error('Failed to fetch library', e);
     }
@@ -227,7 +232,7 @@ const App = () => {
         fetchLibrary();
       }
     },
-    [fetchLibrary]
+    [fetchLibrary],
   );
 
   const deletePlaylist = useCallback(
@@ -238,7 +243,7 @@ const App = () => {
         goBack();
       }
     },
-    [fetchLibrary, goBack]
+    [fetchLibrary, goBack],
   );
 
   // -- Menu Logic --
@@ -272,13 +277,13 @@ const App = () => {
         }
       }
     },
-    [navigateTo, setChassisColor, setClockSettings, navState.currentMenuId, librarySongs, music]
+    [navigateTo, setChassisColor, setClockSettings, navState.currentMenuId, librarySongs, music],
   );
 
   // -- Playback Orchestration --
   /**
    * Transitions the UI to the Now Playing screen when a song is selected.
-   * If the song is already active, we just navigate to avoid disrupting 
+   * If the song is already active, we just navigate to avoid disrupting
    * the current playback state.
    */
   const playOrNavigate = useCallback(
@@ -294,7 +299,7 @@ const App = () => {
       music.playSong(track, queue);
       navigateTo(MenuIDs.NOW_PLAYING);
     },
-    [music, navigateTo]
+    [music, navigateTo],
   );
 
   const handleSearchSelect = useCallback(
@@ -302,7 +307,7 @@ const App = () => {
       playOrNavigate(track, results);
       setGlobalSearchResults([]); // Clear results on navigate
     },
-    [playOrNavigate]
+    [playOrNavigate],
   );
 
   const handlePlaylistSearchSelect = useCallback(
@@ -322,16 +327,22 @@ const App = () => {
         console.error('Add to playlist failed', err);
       }
     },
-    [addingToPlaylistId, fetchLibrary]
+    [addingToPlaylistId, fetchLibrary],
   );
 
-  const handleGlobalSearch = useCallback(
-    async (query: string) => {
-      setGlobalSearchQuery(query);
-      if (query.trim().length < 2) {
+  const handleGlobalSearch = useCallback(async (query: string) => {
+    setGlobalSearchQuery(query);
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      const query = globalSearchQuery.trim();
+      if (query.length < 2) {
         setGlobalSearchResults([]);
         return;
       }
+
       setIsGlobalSearchLoading(true);
       try {
         const results = await searchSongs(query);
@@ -344,7 +355,11 @@ const App = () => {
           thumbnailUrlBackup: item.thumbnailBackup,
           album: 'Unknown',
         }));
-        setGlobalSearchResults(tracks);
+
+        // Deduplicate results by videoId
+        const uniqueTracks = Array.from(new Map(tracks.map((t) => [t.videoId, t])).values());
+
+        setGlobalSearchResults(uniqueTracks);
         // Reset selection when search results come in
         setTimeout(() => selectIndex(0), 0);
       } catch (err) {
@@ -352,9 +367,10 @@ const App = () => {
       } finally {
         setIsGlobalSearchLoading(false);
       }
-    },
-    [selectIndex]
-  );
+    }, 400); // 400ms debounce
+
+    return () => clearTimeout(timer);
+  }, [globalSearchQuery, selectIndex]);
 
   const handlePlayPause = useCallback(() => {
     if (music.currentTrack) music.togglePlayPause();
@@ -422,7 +438,7 @@ const App = () => {
           label: `${track.title} - ${track.artist}`,
           type: 'action' as MenuItemType,
           action: () => handleSearchSelect(track, globalSearchResults),
-        })
+        }),
       );
     }
 
@@ -454,7 +470,7 @@ const App = () => {
             }));
             playOrNavigate(track, favQueue);
           },
-        })
+        }),
       );
     }
 
@@ -472,7 +488,7 @@ const App = () => {
             setSelectedArtistId(artist.id);
             navigateTo(MenuIDs.ARTIST_DETAIL);
           },
-        })
+        }),
       );
     }
 
@@ -561,7 +577,7 @@ const App = () => {
               setSelectedPlaylistId(p.id);
               navigateTo(MenuIDs.PLAYLIST_DETAIL);
             },
-          })
+          }),
         ),
       ] as MenuItem[];
     }
@@ -593,7 +609,7 @@ const App = () => {
             action: () => {
               playOrNavigate(track, playlistSongs);
             },
-          })
+          }),
         ),
         {
           id: 'rename_playlist',
@@ -615,7 +631,7 @@ const App = () => {
         .filter(
           (s) =>
             s.title.toLowerCase().includes(playlistSearchQuery.toLowerCase()) ||
-            s.artist.toLowerCase().includes(playlistSearchQuery.toLowerCase())
+            s.artist.toLowerCase().includes(playlistSearchQuery.toLowerCase()),
         )
         .slice(0, 15);
 
@@ -628,13 +644,13 @@ const App = () => {
           label: songIds.includes(track.videoId) ? `✓ ${track.title}` : track.title,
           type: 'action',
           action: () => handlePlaylistSearchSelect(track),
-        })
+        }),
       );
     }
 
     if (menuId === MenuIDs.GENRES) {
       const availableGenres = Array.from(
-        new Set(librarySongs.map((s) => s.genre).filter(Boolean))
+        new Set(librarySongs.map((s) => s.genre).filter(Boolean)),
       ) as string[];
       if (availableGenres.length === 0)
         return [{ id: 'no_genres', label: 'No Genres Found', type: 'toggle' as MenuItemType }];
@@ -649,7 +665,7 @@ const App = () => {
             setSelectedGenreId(g);
             navigateTo(MenuIDs.GENRE_DETAIL);
           },
-        })
+        }),
       );
     }
 
@@ -667,7 +683,7 @@ const App = () => {
           action: () => {
             playOrNavigate(song, genreSongs);
           },
-        })
+        }),
       );
     }
 
@@ -804,7 +820,7 @@ const App = () => {
       return [
         { id: 'note_title', label: `📝 ${note.title}`, type: 'toggle' as const },
         ...lines.map(
-          (line, i): MenuItem => ({ id: `line_${i}`, label: line || ' ', type: 'toggle' as const })
+          (line, i): MenuItem => ({ id: `line_${i}`, label: line || ' ', type: 'toggle' as const }),
         ),
         {
           id: 'edit_note',
@@ -915,7 +931,7 @@ const App = () => {
         scroll(direction, currentMenuItems.length);
       }
     },
-    [isBooting, navState.currentMenuId, scroll, currentMenuItems.length]
+    [isBooting, navState.currentMenuId, scroll, currentMenuItems.length],
   );
 
   const handleBack = useCallback(() => {
