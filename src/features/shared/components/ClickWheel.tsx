@@ -1,6 +1,6 @@
 import React from 'react';
 import { useClickWheel } from '@shared/hooks/useClickWheel';
-import { SkipBack, SkipForward, Play, Pause } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause } from '@phosphor-icons/react';
 
 interface ClickWheelProps {
   onScroll: (direction: 'cw' | 'ccw') => void;
@@ -99,7 +99,7 @@ export const ClickWheel = React.memo<ClickWheelProps>(
         >
           <SkipBack
             size={22}
-            fill="currentColor"
+            weight="fill"
             className="group-active:text-[#7C7A8D] transition-colors"
           />
         </button>
@@ -120,7 +120,7 @@ export const ClickWheel = React.memo<ClickWheelProps>(
         >
           <SkipForward
             size={22}
-            fill="currentColor"
+            weight="fill"
             className="group-active:text-[#7C7A8D] transition-colors"
           />
         </button>
@@ -131,17 +131,17 @@ export const ClickWheel = React.memo<ClickWheelProps>(
             e.stopPropagation();
             onPlayPause();
           }}
-          className={`${buttonStyle} left-1/2 -translate-x-1/2 items-end gap-1`}
+          className={`${buttonStyle} left-1/2 -translate-x-1/2 items-center`}
           style={{
-            top: '200px', // Balanced against MENU
+            top: '202px', // Slightly lower for better visual balance at bottom
             width: '60px',
             height: '30px',
             color: COLOR_NORMAL,
           }}
         >
-          <div className="flex group-active:text-[#7C7A8D] transition-colors">
-            <Play size={15} fill="currentColor" />
-            <Pause size={15} fill="currentColor" className="-ml-1" />
+          <div className="flex group-active:text-[#7C7A8D] transition-colors items-center gap-[4px]">
+            <Play size={20} weight="fill" />
+            <Pause size={20} weight="fill" />
           </div>
         </button>
 
@@ -166,5 +166,5 @@ export const ClickWheel = React.memo<ClickWheelProps>(
         />
       </div>
     );
-  }
+  },
 );

@@ -3,4 +3,5 @@
 - [x] Perform `@AUDIT` and create `AUDIT.md`
 - [x] Fix audit findings one by one (Silent Catches)
 - [x] Fix audit findings one by one (Rule-Compliant Comments)
-- [/] Final push to GitHub
+- [x] Standardize ClickWheel playback icons (Solid style using Phosphor)
+- [x] Final push to GitHub
