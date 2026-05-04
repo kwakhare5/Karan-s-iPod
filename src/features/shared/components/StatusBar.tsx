@@ -54,7 +54,7 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
             style={{
               fontFamily: 'Inter, -apple-system, sans-serif',
               fontWeight: 700,
-              fontSize: '17px',
+              fontSize: '16px',
               color: textColor,
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
@@ -84,7 +84,7 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
         {/* Right - Play/Pause indicator + Battery */}
         <div
           className="flex justify-end items-center h-full pr-1"
-          style={{ width: '82px', gap: '13px' }}
+          style={{ width: '82px', gap: '12px' }}
         >
           <style>
             {`
@@ -178,5 +178,5 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );

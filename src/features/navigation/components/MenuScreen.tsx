@@ -80,7 +80,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = React.memo(
       } else if (isItemBelowView) {
         container.scrollTop = Math.min(
           container.scrollHeight - containerHeight,
-          itemTop + itemHeight - containerHeight
+          itemTop + itemHeight - containerHeight,
         );
       }
 
@@ -118,7 +118,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = React.memo(
                     className="flex-1 overflow-hidden"
                     style={{ display: 'flex', whiteSpace: 'nowrap' }}
                   >
-                    <span className="text-[17px] font-semibold tracking-[-0.015em] truncate flex-1">
+                    <span className="text-[16px] font-semibold tracking-[-0.015em] truncate flex-1">
                       {item.label}
                     </span>
                   </div>
@@ -137,5 +137,5 @@ export const MenuScreen: React.FC<MenuScreenProps> = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );

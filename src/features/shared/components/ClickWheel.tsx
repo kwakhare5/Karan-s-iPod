@@ -73,7 +73,7 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           <span
             style={{
               fontFamily: 'Inter',
-              fontSize: '15px',
+              fontSize: '16px',
               fontWeight: 600,
               letterSpacing: '0.05em', // Refined tracking
             }}
@@ -140,8 +140,8 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           }}
         >
           <div className="flex group-active:text-[#7C7A8D] transition-colors">
-            <Play size={15} fill="currentColor" />
-            <Pause size={15} fill="currentColor" className="-ml-1" />
+            <Play size={16} fill="currentColor" />
+            <Pause size={16} fill="currentColor" className="-ml-1" />
           </div>
         </button>
 

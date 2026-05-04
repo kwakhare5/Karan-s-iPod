@@ -35,7 +35,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
         <div className="px-4 py-3 border-b border-[#E5E5E5]">
           <input
-            className="w-full text-[17px] font-semibold tracking-[-0.015em] text-gray-900 bg-transparent outline-none placeholder:text-gray-300"
+            className="w-full text-[16px] font-semibold tracking-[-0.015em] text-gray-900 bg-transparent outline-none placeholder:text-gray-300"
             placeholder="Title"
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
@@ -43,7 +43,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         </div>
         <div className="flex-1 px-4 py-3">
           <textarea
-            className="w-full h-full text-[15px] font-medium leading-relaxed text-gray-600 bg-transparent outline-none resize-none placeholder:text-gray-300"
+            className="w-full h-full text-[16px] font-medium leading-relaxed text-gray-600 bg-transparent outline-none resize-none placeholder:text-gray-300"
             placeholder="Start writing..."
             value={content}
             onChange={(e) => onContentChange(e.target.value)}
