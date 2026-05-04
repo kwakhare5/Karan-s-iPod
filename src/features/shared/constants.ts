@@ -141,11 +141,7 @@ export const ROOT_MENUS: Record<string, MenuItem[]> = {
     { id: 'set_color_pink', label: 'Pink', type: 'action' },
     { id: 'set_color_red', label: 'Red', type: 'action' },
   ],
-  [MenuIDs.SETTINGS_CLOCK]: [
-    { id: 'time_format', label: 'Time Format', type: 'toggle' },
-    { id: 'show_seconds', label: 'Show Seconds', type: 'toggle' },
-    { id: 'date_format', label: 'Date Format', type: 'toggle' },
-  ],
+
   [MenuIDs.ABOUT]: [
     { id: 'name', label: 'Karan\u2019s iPod', type: 'toggle' },
     { id: 'songs', label: 'Songs: \u221E (Online)', type: 'toggle' },

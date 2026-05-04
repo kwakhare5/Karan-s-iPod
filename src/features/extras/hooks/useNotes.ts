@@ -46,10 +46,10 @@ export const useNotes = () => {
   const updateNote = useCallback(
     (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
       setNotes((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, ...updates, updatedAt: Date.now() } : n))
+        prev.map((n) => (n.id === id ? { ...n, ...updates, updatedAt: Date.now() } : n)),
       );
     },
-    []
+    [],
   );
 
   const deleteNote = useCallback((id: string) => {
@@ -60,7 +60,7 @@ export const useNotes = () => {
     (id: string) => {
       return notes.find((n) => n.id === id) || null;
     },
-    [notes]
+    [notes],
   );
 
   return {
