@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Track } from '../types';
-import { searchSongs } from '../utils/musicApi';
+import { Track } from '@shared/types';
+import { searchSongs } from '@features/music/api/musicApi';
 
 // YouTube IFrame API types
 interface YTPlayerEvent {

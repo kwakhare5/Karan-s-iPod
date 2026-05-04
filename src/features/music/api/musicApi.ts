@@ -1,5 +1,5 @@
 // utils/musicApi.ts
-import { API_BASE_URL } from '../constants';
+import { API_BASE_URL } from '@shared/constants';
 
 // ───── Types ─────
 export interface Song {

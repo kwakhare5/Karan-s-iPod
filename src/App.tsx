@@ -1,20 +1,23 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { MenuIDs, MenuItem, Track, MenuItemType, Playlist } from './types';
-import { ROOT_MENUS, API_BASE_URL } from './constants';
-import { MenuScreen } from './components/MenuScreen';
-import { ClockScreen } from './components/ClockScreen';
-import { ClickWheel } from './components/ClickWheel';
-import { NowPlayingScreen } from './components/NowPlayingScreen';
-import { SearchScreen } from './components/SearchScreen';
-import { StatusBar } from './components/StatusBar';
-import { useNavigation } from './hooks/useNavigation';
-import { useSettings } from './hooks/useSettings';
-import { useBacklight, BACKLIGHT_OPTIONS } from './hooks/useBacklight';
-import { useContacts } from './hooks/useContacts';
-import { useNotes } from './hooks/useNotes';
-import { useMusicPlayer } from './hooks/useMusicPlayer';
-import { searchSongs, Song } from './utils/musicApi';
-import { Artist } from './types';
+import { MenuIDs, MenuItem, Track, MenuItemType, Playlist, Artist } from '@shared/types';
+import { ROOT_MENUS, API_BASE_URL } from '@shared/constants';
+import { MenuScreen } from '@features/navigation/components/MenuScreen';
+import { ClockScreen } from '@shared/components/ClockScreen';
+import { ClickWheel } from '@shared/components/ClickWheel';
+import { NowPlayingScreen } from '@features/music/components/NowPlayingScreen';
+import { SearchScreen } from '@features/music/components/SearchScreen';
+import { StatusBar } from '@shared/components/StatusBar';
+import { useNavigation } from '@features/navigation/hooks/useNavigation';
+import { useSettings } from '@features/settings/hooks/useSettings';
+import { useBacklight, BACKLIGHT_OPTIONS } from '@features/settings/hooks/useBacklight';
+import { useContacts } from '@features/extras/hooks/useContacts';
+import { useNotes } from '@features/extras/hooks/useNotes';
+import { useMusicPlayer } from '@features/music/hooks/useMusicPlayer';
+import { searchSongs, Song } from '@features/music/api/musicApi';
+import { BootScreen } from '@shared/components/BootScreen';
+import { NoteEditor } from '@features/extras/components/NoteEditor';
+import { LocationPicker } from '@features/settings/components/LocationPicker';
+
 
 const CHASSIS_GRADIENTS: Record<string, string> = {
   silver: 'linear-gradient(197.05deg, #E2E2E2 3.73%, #AEAEAE 94.77%)',
@@ -24,16 +27,6 @@ const CHASSIS_GRADIENTS: Record<string, string> = {
   red: 'linear-gradient(197.05deg, #ff5252 3.73%, #d32f2f 94.77%)',
 };
 
-const BootScreen = ({ status }: { status: string }) => (
-  <div className="w-full h-full bg-[#1a1a1a] flex flex-col items-center justify-center gap-6">
-    <img src="/apple_logo.png" alt="Apple Logo" className="w-24 h-24 object-contain" />
-    {status && (
-      <div className="text-white/40 text-xs font-mono tracking-widest animate-pulse uppercase">
-        {status}
-      </div>
-    )}
-  </div>
-);
 
 const App = () => {
   const calculateScale = () => {
@@ -1096,86 +1089,38 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.NOTE_EDIT) {
     ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
-        <StatusBar
-          title={isEditingNote ? 'Edit Note' : 'New Note'}
-          isPlaying={music.isPlaying}
-          hasActiveTrack={!!music.currentTrack}
-          theme="light"
-        />
-        <div className="flex-1 flex flex-col gap-2 p-4">
-          <input
-            className="border p-1 rounded text-sm text-black"
-            placeholder="Title"
-            value={noteForm.title}
-            onChange={(e) => setNoteForm((s) => ({ ...s, title: e.target.value }))}
-          />
-          <textarea
-            className="border p-1 rounded text-sm text-black flex-1 resize-none"
-            placeholder="Content"
-            value={noteForm.content}
-            onChange={(e) => setNoteForm((s) => ({ ...s, content: e.target.value }))}
-          />
-          <div className="flex gap-2 mt-2">
-            <button className="bg-gray-300 text-black p-1 rounded flex-1" onClick={goBack}>
-              Cancel
-            </button>
-            <button
-              className="bg-blue-500 text-white p-1 rounded flex-1"
-              onClick={() => {
-                if (noteForm.title) {
-                  if (isEditingNote && selectedNote)
-                    updateNote(selectedNote, { title: noteForm.title, content: noteForm.content });
-                  else addNote(noteForm.title, noteForm.content);
-                  goBack();
-                }
-              }}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
+      <NoteEditor
+        isEditing={isEditingNote}
+        title={noteForm.title}
+        content={noteForm.content}
+        onTitleChange={(title) => setNoteForm((s) => ({ ...s, title }))}
+        onContentChange={(content) => setNoteForm((s) => ({ ...s, content }))}
+        onSave={() => {
+          if (noteForm.title) {
+            if (isEditingNote && selectedNote)
+              updateNote(selectedNote, { title: noteForm.title, content: noteForm.content });
+            else addNote(noteForm.title, noteForm.content);
+            goBack();
+          }
+        }}
+        onCancel={goBack}
+        isPlaying={music.isPlaying}
+        hasActiveTrack={!!music.currentTrack}
+      />
     );
   } else if (menuId === MenuIDs.LOCATION_INPUT) {
     ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
-        <StatusBar
-          title="Set Location"
-          isPlaying={music.isPlaying}
-          hasActiveTrack={!!music.currentTrack}
-          theme="light"
-        />
-        <div className="flex-1 flex flex-col justify-center p-4">
-          <input
-            className="border p-2 rounded w-full text-black mb-4"
-            placeholder="City Name"
-            value={locationInput}
-            onChange={(e) => setLocationInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                setClockSettings((s) => ({ ...s, location: locationInput }));
-                goBack();
-              }
-            }}
-            autoFocus
-          />
-          <div className="flex gap-2">
-            <button onClick={goBack} className="bg-gray-300 text-black p-2 rounded flex-1">
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                setClockSettings((s) => ({ ...s, location: locationInput }));
-                goBack();
-              }}
-              className="bg-blue-500 text-white p-2 rounded flex-1"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
+      <LocationPicker
+        value={locationInput}
+        onChange={setLocationInput}
+        onSave={() => {
+          setClockSettings((s) => ({ ...s, location: locationInput }));
+          goBack();
+        }}
+        onCancel={goBack}
+        isPlaying={music.isPlaying}
+        hasActiveTrack={!!music.currentTrack}
+      />
     );
   } else if (menuId === MenuIDs.PLAYLIST_SEARCH) {
     ScreenComponent = (

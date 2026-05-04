@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ClockSettings } from '../types';
+import { ClockSettings } from '@shared/types';
 
 export interface FavoriteTrack {
   id: string;

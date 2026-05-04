@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { Track } from '../types';
-import { StatusBar } from './StatusBar';
+import { Track } from '@shared/types';
+import { StatusBar } from '@shared/components/StatusBar';
 import { Shuffle, Repeat, Heart, Loader2 } from 'lucide-react';
 
 interface NowPlayingScreenProps {

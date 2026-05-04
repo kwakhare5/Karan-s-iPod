@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { MenuItem } from '../types';
-import { StatusBar } from './StatusBar';
+import { MenuItem } from '@shared/types';
+import { StatusBar } from '@shared/components/StatusBar';
 import { ChevronRight } from 'lucide-react';
 
 interface MenuScreenProps {

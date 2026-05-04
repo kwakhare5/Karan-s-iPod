@@ -1,5 +1,5 @@
 import React from 'react';
-import { useClickWheel } from '../hooks/useClickWheel';
+import { useClickWheel } from '@shared/hooks/useClickWheel';
 import { SkipBack, SkipForward, Play, Pause } from 'lucide-react';
 
 interface ClickWheelProps {
