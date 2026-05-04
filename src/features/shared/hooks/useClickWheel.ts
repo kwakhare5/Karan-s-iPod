@@ -54,7 +54,7 @@ export const useClickWheel = ({
       stateRef.current.accumulatedDelta = 0;
       stateRef.current.lastScrollTime = Date.now();
     },
-    [enabled]
+    [enabled],
   );
 
   const handleMove = useCallback((clientX: number, clientY: number) => {
@@ -74,8 +74,8 @@ export const useClickWheel = ({
     stateRef.current.accumulatedDelta += delta;
     stateRef.current.lastAngle = currentAngle;
 
-    // 30-degree threshold for scroll event (Increased sensitivity)
-    const THRESHOLD = 30;
+    // 20-degree threshold for scroll event (Increased sensitivity)
+    const THRESHOLD = 20;
     const absDelta = Math.abs(stateRef.current.accumulatedDelta);
 
     if (absDelta >= THRESHOLD) {

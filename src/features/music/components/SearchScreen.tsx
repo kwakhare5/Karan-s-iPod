@@ -101,21 +101,21 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
         theme="light"
       />
 
-      <div className="flex-1 flex flex-col items-center px-4 pt-3 overflow-hidden">
-        {/* Search Input - Compact Styled */}
-        <div className="w-full max-w-[280px] relative mb-4 shrink-0">
-          <div className="flex items-center bg-gray-100 rounded-xl border border-gray-200 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all h-11">
-            <Search size={18} className="text-gray-400 ml-3 shrink-0" />
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
+        {/* Search Input - Clean iPod Style */}
+        <div className="w-full bg-[#FFFFFF] border-b border-[#E5E5E5] px-4 py-2.5 shrink-0 relative z-10">
+          <div className="flex items-center bg-[#F2F2F7] rounded-lg h-9">
+            <Search size={18} strokeWidth={2.5} className="text-[#8e8e93] ml-3 shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => onSearch(e.target.value)}
               placeholder="Search songs..."
-              className="w-full h-full px-3 bg-transparent text-base text-gray-800 placeholder-gray-400 focus:outline-none font-semibold"
+              className="w-full h-full px-3 bg-transparent text-[16px] text-black placeholder-[#aeaeb2] focus:outline-none font-semibold"
             />
             {isLoading && (
-              <Loader2 size={16} className="animate-spin text-blue-500 mr-2 shrink-0" />
+              <Loader2 size={16} className="animate-spin text-[#007AFF] mr-2.5 shrink-0" />
             )}
             {query && !isLoading && (
               <button
@@ -123,18 +123,33 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                   onSearch('');
                   inputRef.current?.focus();
                 }}
-                className="mr-3 w-6 h-6 rounded-full bg-gray-300 text-white flex items-center justify-center text-xs hover:bg-gray-400 shrink-0"
+                className="mr-2.5 text-gray-400 hover:text-gray-600 transition-colors shrink-0"
               >
-                ?
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
               </button>
             )}
           </div>
         </div>
 
         {/* Results List */}
-        <div ref={scrollRef} className="w-full flex-1 overflow-y-auto min-h-0 ipod-scrollbar pr-1">
+        <div
+          ref={scrollRef}
+          className="w-full flex-1 overflow-y-auto min-h-0 ipod-scrollbar relative z-0 pt-1"
+        >
           {results.length > 0 ? (
-            <div className="w-full pb-4 divide-y divide-gray-50">
+            <div className="w-full pb-8 divide-y divide-[#E5E5E5]">
               {results.map((track, index) => {
                 const active = selectedIndex === index;
                 return (
@@ -143,10 +158,10 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                     ref={(el) => {
                       itemRefs.current[index] = el;
                     }}
-                    className={`flex items-center gap-3 p-2 cursor-pointer transition-colors rounded-lg ${active ? 'bg-blue-500 text-white' : 'hover:bg-blue-50'}`}
+                    className={`flex items-center gap-3 px-4 py-2 min-h-[50px] cursor-pointer transition-colors ${active ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-900 hover:bg-gray-50'}`}
                     onClick={() => onSelectResult(track, results)}
                   >
-                    <div className="w-10 h-10 rounded bg-gray-100 shrink-0 overflow-hidden shadow-sm">
+                    <div className="w-10 h-10 rounded bg-gray-200 shrink-0 overflow-hidden shadow-sm border border-black/5">
                       <img
                         src={track.thumbnailUrl}
                         alt=""
@@ -167,16 +182,17 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                         }}
                       />
                     </div>
-                    <div className="flex-1 min-w-0 text-left">
+                    <div className="flex-1 flex flex-col justify-center min-w-0">
                       <div
-                        className={`font-semibold text-sm truncate ${active ? 'text-white' : 'text-gray-900'}`}
+                        className={`font-semibold text-[17px] tracking-tight truncate leading-tight ${active ? 'text-white' : 'text-black'}`}
                       >
-                        {track.title}
+                        {track.title || 'Unknown Song'}
                       </div>
                       <div
-                        className={`text-xs truncate ${active ? 'text-white/80' : 'text-gray-500'}`}
+                        className={`text-[13px] truncate mt-0.5 ${active ? 'text-white/90' : 'text-[#8e8e93]'}`}
                       >
-                        {track.artist} {track.duration > 0 && `� ${formatDuration(track.duration)}`}
+                        {track.artist || 'Unknown Artist'}{' '}
+                        {track.duration > 0 && `• ${formatDuration(track.duration)}`}
                       </div>
                     </div>
                   </div>
@@ -184,8 +200,9 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center mt-12 text-gray-400">
-              {!isLoading && <span className="text-sm">Search for music...</span>}
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 px-6 text-center h-full pb-20">
+              <Search size={48} strokeWidth={1.5} className="mb-4 opacity-20" />
+              <p className="text-sm font-medium">Search for songs, artists, or albums</p>
             </div>
           )}
         </div>

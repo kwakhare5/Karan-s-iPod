@@ -42,10 +42,7 @@ export const ClockScreen: React.FC<ClockScreenProps> = ({
         <div className="flex flex-col items-center">
           {/* Main Time Display */}
           <div className="flex items-baseline mb-2">
-            <span
-              className="text-[82px] font-bold tracking-tight text-[#3a3a3c] leading-none"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
+            <span className="text-[82px] font-bold tracking-[-0.05em] text-[#3a3a3c] leading-none font-sans">
               {settings.is24Hour
                 ? now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
                 : now
@@ -54,20 +51,14 @@ export const ClockScreen: React.FC<ClockScreenProps> = ({
                     .trim()}
             </span>
             {!settings.is24Hour && (
-              <span
-                className="text-2xl font-semibold text-[#8e8e93] ml-2 uppercase tracking-wide"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
+              <span className="text-2xl font-semibold text-[#8e8e93] ml-2 uppercase tracking-wide font-sans">
                 {now.getHours() >= 12 ? 'PM' : 'AM'}
               </span>
             )}
           </div>
 
           {/* Elegant Date Subtitle */}
-          <div
-            className="text-lg font-medium text-[#8e8e93] tracking-normal opacity-80"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
+          <div className="text-lg font-medium text-[#8e8e93] tracking-tight opacity-80 font-sans">
             {dateString}
           </div>
         </div>

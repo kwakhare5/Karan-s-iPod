@@ -30,7 +30,7 @@ const getWeatherCondition = (code: number): string => {
 export const useSettings = () => {
   const [chassisColor, setChassisColor] = useState(() => {
     try {
-      return localStorage.getItem('chassis_color') || 'silver';
+      return localStorage.getItem('ipod_chassis_color') || 'silver';
     } catch {
       return 'silver';
     }
@@ -112,7 +112,7 @@ export const useSettings = () => {
         // ... add more as needed or integrate real geocoding later
 
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`,
         );
         const data = await response.json();
 
@@ -123,7 +123,7 @@ export const useSettings = () => {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch weather:', error);
+        console.error('[iPod Weather Error]: Failed to fetch weather:', error);
       }
     };
 

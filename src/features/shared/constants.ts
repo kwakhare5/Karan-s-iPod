@@ -2,7 +2,8 @@
 import { MenuIDs, MenuItem } from './types';
 
 // API Base URL - uses environment variable in production, fallback to Render backend
-export const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://karan-ipod-backend.onrender.com';
+export const API_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL || 'https://karan-ipod-backend.onrender.com';
 
 export const ROOT_MENUS: Record<string, MenuItem[]> = {
   [MenuIDs.HOME]: [
@@ -146,7 +147,7 @@ export const ROOT_MENUS: Record<string, MenuItem[]> = {
     { id: 'date_format', label: 'Date Format', type: 'toggle' },
   ],
   [MenuIDs.ABOUT]: [
-    { id: 'name', label: 'Name: Karan\u2019s iPod', type: 'toggle' },
+    { id: 'name', label: 'Karan\u2019s iPod', type: 'toggle' },
     { id: 'songs', label: 'Songs: \u221E (Online)', type: 'toggle' },
     { id: 'capacity', label: 'Capacity: 32 GB', type: 'toggle' },
     { id: 'available', label: 'Available: 31.8 GB', type: 'toggle' },

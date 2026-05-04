@@ -77,14 +77,14 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
       barRef.current?.setPointerCapture(e.pointerId);
       onSeek(frac(e.clientX));
     },
-    [onSeek, frac]
+    [onSeek, frac],
   );
 
   const onPM = useCallback(
     (e: React.PointerEvent) => {
       if (dragging.current) onSeek(frac(e.clientX));
     },
-    [onSeek, frac]
+    [onSeek, frac],
   );
 
   const onPU = useCallback(() => {
@@ -263,7 +263,7 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
           <div
             style={{
               fontSize: 14,
-              fontWeight: 700,
+              fontWeight: 600, // Matching MenuScreen semibold
               color: '#fff',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -387,9 +387,9 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
             {/* Shuffle � far left */}
             <button
               onClick={onToggleShuffle}
-              style={{ ...btn, color: isShuffled ? '#0a84ff' : '#8e8e93', width: 26, height: 26 }}
+              style={{ ...btn, color: isShuffled ? '#007aff' : '#8e8e93', width: 26, height: 26 }}
             >
-              <Shuffle size={16} strokeWidth={2.5} />
+              <Shuffle size={16} strokeWidth={2} />
             </button>
 
             {/* Queue counter � center */}
@@ -417,20 +417,20 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
                 <Heart
                   size={16}
                   fill={isLiked ? 'currentColor' : 'none'}
-                  strokeWidth={isLiked ? 0 : 2.5}
+                  strokeWidth={isLiked ? 0 : 2}
                 />
               </button>
               <button
                 onClick={onToggleRepeat}
                 style={{
                   ...btn,
-                  color: repeatMode !== 'off' ? '#0a84ff' : '#8e8e93',
+                  color: repeatMode !== 'off' ? '#007aff' : '#8e8e93',
                   width: 26,
                   height: 26,
                   position: 'relative',
                 }}
               >
-                <Repeat size={16} strokeWidth={2.5} />
+                <Repeat size={16} strokeWidth={2} />
                 {repeatMode === 'one' && (
                   <span
                     style={{
@@ -440,7 +440,7 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
                       transform: 'translate(-50%, -50%)',
                       fontSize: 7,
                       fontWeight: 800,
-                      color: '#0a84ff',
+                      color: '#007aff',
                     }}
                   >
                     1

@@ -1,22 +1,16 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { MenuIDs, MenuItem, Track, MenuItemType, Playlist, Artist } from '@shared/types';
+import { MenuIDs, MenuItem, Track, MenuItemType } from '@shared/types';
 import { ROOT_MENUS, API_BASE_URL } from '@shared/constants';
-import { MenuScreen } from '@features/navigation/components/MenuScreen';
-import { ClockScreen } from '@shared/components/ClockScreen';
 import { ClickWheel } from '@shared/components/ClickWheel';
-import { NowPlayingScreen } from '@features/music/components/NowPlayingScreen';
-import { SearchScreen } from '@features/music/components/SearchScreen';
-import { StatusBar } from '@shared/components/StatusBar';
 import { useNavigation } from '@features/navigation/hooks/useNavigation';
 import { useSettings } from '@features/settings/hooks/useSettings';
 import { useBacklight, BACKLIGHT_OPTIONS } from '@features/settings/hooks/useBacklight';
 import { useContacts } from '@features/extras/hooks/useContacts';
 import { useNotes } from '@features/extras/hooks/useNotes';
 import { useMusicPlayer } from '@features/music/hooks/useMusicPlayer';
-import { searchSongs, Song } from '@features/music/api/musicApi';
-import { BootScreen } from '@shared/components/BootScreen';
-import { NoteEditor } from '@features/extras/components/NoteEditor';
-import { LocationPicker } from '@features/settings/components/LocationPicker';
+import { ScreenRouter } from '@features/navigation/components/ScreenRouter';
+import { useLibrary } from '@features/music/hooks/useLibrary';
 
 const CHASSIS_GRADIENTS: Record<string, string> = {
   silver: 'linear-gradient(197.05deg, #E2E2E2 3.73%, #AEAEAE 94.77%)',
@@ -90,16 +84,30 @@ const App = () => {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [locationInput, setLocationInput] = useState('');
 
-  // -- Library State --
-  const [libraryArtists, setLibraryArtists] = useState<Artist[]>([]);
-  // const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null); // Unused
+  // -- Library State (from Hook) --
+  const {
+    libraryArtists,
+    playlists,
+    librarySongs,
+    sortedArtists,
+    sortedSongs,
+    fetchLibrary,
+    renamePlaylist,
+    deletePlaylist,
+    addToPlaylist,
+    globalSearchQuery,
+    setGlobalSearchQuery,
+    globalSearchResults,
+    setGlobalSearchResults,
+    isGlobalSearchLoading,
+  } = useLibrary();
+
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
   const [addingToPlaylistId, setAddingToPlaylistId] = useState<string | null>(null);
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const [selectedGenreId, setSelectedGenreId] = useState<string | null>(null);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  // genres removed (unused)
   const [playlistSearchQuery, setPlaylistSearchQuery] = useState('');
+  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
 
   // Reset selection on search query change for "predictive" feel
   useEffect(() => {
@@ -108,84 +116,12 @@ const App = () => {
     }
   }, [playlistSearchQuery, navState.currentMenuId, selectIndex]);
 
-  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
-  const [librarySongs, setLibrarySongs] = useState<Track[]>([]);
-  const [globalSearchResults, setGlobalSearchResults] = useState<Track[]>([]);
-  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [isGlobalSearchLoading, setIsGlobalSearchLoading] = useState(false);
-
-  // -- Memoized Sorted Data --
-  const sortedArtists = useMemo(() => {
-    return [...libraryArtists].sort((a, b) => a.name.localeCompare(b.name));
-  }, [libraryArtists]);
-
-  const sortedSongs = useMemo(() => {
-    return [...librarySongs].sort((a, b) => a.title.localeCompare(b.title));
-  }, [librarySongs]);
-
-  // We hydrate the library from localStorage first to provide an
-  // 'instant-on' feel, then sync with the server in the background.
-  const fetchLibrary = useCallback(async () => {
-    try {
-      const cachedSongs = localStorage.getItem('ipod_library_songs');
-      const initialSongs = cachedSongs ? JSON.parse(cachedSongs) : [];
-
-      const cachedArtists = localStorage.getItem('ipod_library_artists');
-      const initialArtists = cachedArtists ? JSON.parse(cachedArtists) : [];
-
-      if (Array.isArray(initialArtists) && initialArtists.length > 0) {
-        setLibraryArtists(initialArtists);
-      } else {
-        fetch('/top_artists.json')
-          .then((r) => r.json())
-          .then((d) => {
-            if (Array.isArray(d)) setLibraryArtists(d);
-          })
-          .catch((err) => console.warn('Silent catch fallback:', err));
-      }
-
-      if (Array.isArray(initialSongs) && initialSongs.length > 0) {
-        setLibrarySongs(initialSongs);
-      } else {
-        fetch('/top_songs.json')
-          .then((r) => r.json())
-          .then((d) => {
-            if (Array.isArray(d)) setLibrarySongs(d);
-          })
-          .catch((err) => console.warn('Silent catch fallback:', err));
-      }
-
-      // Async fetch to update cache in background
-      fetch(`${API_BASE_URL}/api/library/artists`)
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setLibraryArtists(data);
-            localStorage.setItem('ipod_library_artists', JSON.stringify(data));
-          }
-        })
-        .catch((err) => console.warn('Silent catch fallback:', err));
-
-      fetch(`${API_BASE_URL}/api/playlists`)
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (Array.isArray(data)) setPlaylists(data);
-        })
-        .catch((err) => console.warn('Silent catch fallback:', err));
-
-      fetch(`${API_BASE_URL}/api/library/songs`)
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setLibrarySongs(data);
-            localStorage.setItem('ipod_library_songs', JSON.stringify(data));
-          }
-        })
-        .catch((err) => console.warn('Silent catch fallback:', err));
-    } catch (e) {
-      console.error('Failed to fetch library', e);
+  // Reset global search selection (migrated from hook to component to use selectIndex)
+  useEffect(() => {
+    if (globalSearchResults.length > 0) {
+      setTimeout(() => selectIndex(0), 0);
     }
-  }, []);
+  }, [globalSearchResults, selectIndex]);
 
   useEffect(() => {
     const bootTimer = setTimeout(() => {
@@ -200,7 +136,7 @@ const App = () => {
           console.log('Server is awake');
         }
       } catch (err) {
-        console.warn('Server ping failed', err);
+        console.error('[iPod API Error]: Server ping failed', err);
       }
     };
 
@@ -220,32 +156,6 @@ const App = () => {
     return () => clearTimeout(t);
   }, [fetchLibrary]);
 
-  const renamePlaylist = useCallback(
-    async (id: string, oldName: string) => {
-      const name = prompt('Rename Playlist:', oldName);
-      if (name && name !== oldName) {
-        await fetch(`${API_BASE_URL}/api/playlists/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name }),
-        });
-        fetchLibrary();
-      }
-    },
-    [fetchLibrary],
-  );
-
-  const deletePlaylist = useCallback(
-    async (id: string) => {
-      if (confirm('Are you sure you want to delete this playlist?')) {
-        await fetch(`${API_BASE_URL}/api/playlists/${id}`, { method: 'DELETE' });
-        fetchLibrary();
-        goBack();
-      }
-    },
-    [fetchLibrary, goBack],
-  );
-
   // -- Menu Logic --
   const executeItemAction = useCallback(
     (item: MenuItem) => {
@@ -256,7 +166,9 @@ const App = () => {
       if (item.type === 'navigation' && item.targetMenuId) {
         navigateTo(item.targetMenuId);
       } else if (item.id.startsWith('set_color_')) {
-        setChassisColor(item.id.replace('set_color_', ''));
+        const color = item.id.replace('set_color_', '');
+        setChassisColor(color);
+        localStorage.setItem('ipod_chassis_color', color);
       } else if (navState.currentMenuId === MenuIDs.SETTINGS_CLOCK) {
         if (item.id === 'time_format') setClockSettings((s) => ({ ...s, is24Hour: !s.is24Hour }));
         if (item.id === 'show_seconds')
@@ -271,7 +183,8 @@ const App = () => {
             const j = Math.floor(Math.random() * (i + 1));
             [allSongs[i], allSongs[j]] = [allSongs[j], allSongs[i]];
           }
-          // Use toggleShuffle if needed, but here we just play from queue
+          // Ensure shuffle state is active for UI consistency
+          if (!music.isShuffled) music.toggleShuffle();
           music.playSong(allSongs[0], allSongs);
           navigateTo(MenuIDs.NOW_PLAYING);
         }
@@ -313,64 +226,17 @@ const App = () => {
   const handlePlaylistSearchSelect = useCallback(
     async (track: Track) => {
       if (!addingToPlaylistId) return;
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/playlists/${addingToPlaylistId}/add`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ songId: track.videoId }),
-        });
-        if (res.ok) {
-          await fetchLibrary();
-          // Removed goBack() to allow multi-add
-        }
-      } catch (err) {
-        console.error('Add to playlist failed', err);
-      }
+      await addToPlaylist(addingToPlaylistId, track);
     },
-    [addingToPlaylistId, fetchLibrary],
+    [addingToPlaylistId, addToPlaylist],
   );
 
-  const handleGlobalSearch = useCallback(async (query: string) => {
-    setGlobalSearchQuery(query);
-  }, []);
-
-  // Debounced search effect
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      const query = globalSearchQuery.trim();
-      if (query.length < 2) {
-        setGlobalSearchResults([]);
-        return;
-      }
-
-      setIsGlobalSearchLoading(true);
-      try {
-        const results = await searchSongs(query);
-        const tracks: Track[] = results.map((item: Song) => ({
-          videoId: item.id,
-          title: item.title,
-          artist: item.artist,
-          duration: item.duration,
-          thumbnailUrl: item.thumbnail,
-          thumbnailUrlBackup: item.thumbnailBackup,
-          album: 'Unknown',
-        }));
-
-        // Deduplicate results by videoId
-        const uniqueTracks = Array.from(new Map(tracks.map((t) => [t.videoId, t])).values());
-
-        setGlobalSearchResults(uniqueTracks);
-        // Reset selection when search results come in
-        setTimeout(() => selectIndex(0), 0);
-      } catch (err) {
-        console.error('Global search failed', err);
-      } finally {
-        setIsGlobalSearchLoading(false);
-      }
-    }, 400); // 400ms debounce
-
-    return () => clearTimeout(timer);
-  }, [globalSearchQuery, selectIndex]);
+  const handleGlobalSearch = useCallback(
+    (query: string) => {
+      setGlobalSearchQuery(query);
+    },
+    [setGlobalSearchQuery],
+  );
 
   const handlePlayPause = useCallback(() => {
     if (music.currentTrack) music.togglePlayPause();
@@ -621,7 +487,7 @@ const App = () => {
           id: 'delete_playlist',
           label: 'Delete Playlist',
           type: 'action' as const,
-          action: () => deletePlaylist(playlist.id),
+          action: () => deletePlaylist(playlist.id, goBack),
         },
       ] as MenuItem[];
     }
@@ -989,221 +855,46 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleScroll, handleMenuSelect, handleBack, handlePlayPause]);
 
-  // -- Screen Rendering --
-  let ScreenComponent;
-  const menuId = navState.currentMenuId;
-
-  if (menuId === MenuIDs.NOW_PLAYING && music.currentTrack) {
-    ScreenComponent = (
-      <NowPlayingScreen
-        track={music.currentTrack}
-        isPlaying={music.isPlaying}
-        isLoading={music.isLoading}
-        progress={music.progress}
-        currentTime={music.currentTime}
-        duration={music.duration}
-        isShuffled={music.isShuffled}
-        repeatMode={music.repeatMode}
-        isLiked={favorites.some((f) => f.id === music.currentTrack!.videoId)}
-        onTogglePlay={handlePlayPause}
-        onToggleShuffle={music.toggleShuffle}
-        onToggleRepeat={music.toggleRepeat}
-        onToggleLike={handleToggleLike}
-        onSeek={music.seekTo}
-        volume={music.volume}
-        queueIndex={music.queueIndex}
-        queueLength={music.queue.length}
-      />
-    );
-  } else if (menuId === MenuIDs.NOW_PLAYING && !music.currentTrack) {
-    ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
-        <StatusBar title="Now Playing" isPlaying={false} hasActiveTrack={false} theme="light" />
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#1c1c1e] text-white/50">
-          <div className="text-5xl mb-4">🎵</div>
-          <div className="text-sm">No track playing</div>
-          <div className="text-xs mt-1">Search for music to start</div>
-        </div>
-      </div>
-    );
-  } else if (menuId === MenuIDs.SEARCH) {
-    ScreenComponent = (
-      <SearchScreen
-        selectedIndex={navState.selectedIndex}
-        isPlaying={music.isPlaying}
-        hasActiveTrack={!!music.currentTrack}
-        onSelectResult={handleSearchSelect}
-        results={globalSearchResults}
-        isLoading={isGlobalSearchLoading}
-        onSearch={handleGlobalSearch}
-        query={globalSearchQuery}
-      />
-    );
-  } else if (menuId === MenuIDs.CLOCK) {
-    ScreenComponent = (
-      <ClockScreen
-        onExit={goBack}
-        settings={clockSettings}
-        isPlaying={music.isPlaying}
-        hasActiveTrack={!!music.currentTrack}
-      />
-    );
-  } else if (menuId === MenuIDs.CONTACT_EDIT) {
-    ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
-        <StatusBar
-          title={isEditingContact ? 'Edit Contact' : 'New Contact'}
-          isPlaying={music.isPlaying}
-          hasActiveTrack={!!music.currentTrack}
-          theme="light"
-        />
-        <div className="flex-1 flex flex-col gap-2 p-4">
-          <input
-            className="border p-1 rounded text-sm text-black"
-            placeholder="First Name"
-            value={contactForm.firstName}
-            onChange={(e) => setContactForm((s) => ({ ...s, firstName: e.target.value }))}
-          />
-          <input
-            className="border p-1 rounded text-sm text-black"
-            placeholder="Last Name"
-            value={contactForm.lastName}
-            onChange={(e) => setContactForm((s) => ({ ...s, lastName: e.target.value }))}
-          />
-          <input
-            className="border p-1 rounded text-sm text-black"
-            placeholder="Phone"
-            value={contactForm.phone}
-            onChange={(e) => setContactForm((s) => ({ ...s, phone: e.target.value }))}
-          />
-          <input
-            className="border p-1 rounded text-sm text-black"
-            placeholder="Email"
-            value={contactForm.email}
-            onChange={(e) => setContactForm((s) => ({ ...s, email: e.target.value }))}
-          />
-          <div className="flex gap-2 mt-2">
-            <button className="bg-gray-300 text-black p-1 rounded flex-1" onClick={goBack}>
-              Cancel
-            </button>
-            <button
-              className="bg-blue-500 text-white p-1 rounded flex-1"
-              onClick={() => {
-                if (contactForm.firstName) {
-                  if (isEditingContact && selectedContact)
-                    updateContact(selectedContact, contactForm);
-                  else addContact(contactForm);
-                  goBack();
-                }
-              }}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  } else if (menuId === MenuIDs.NOTE_EDIT) {
-    ScreenComponent = (
-      <NoteEditor
-        isEditing={isEditingNote}
-        title={noteForm.title}
-        content={noteForm.content}
-        onTitleChange={(title) => setNoteForm((s) => ({ ...s, title }))}
-        onContentChange={(content) => setNoteForm((s) => ({ ...s, content }))}
-        onSave={() => {
-          if (noteForm.title) {
-            if (isEditingNote && selectedNote)
-              updateNote(selectedNote, { title: noteForm.title, content: noteForm.content });
-            else addNote(noteForm.title, noteForm.content);
-            goBack();
-          }
-        }}
-        onCancel={goBack}
-        isPlaying={music.isPlaying}
-        hasActiveTrack={!!music.currentTrack}
-      />
-    );
-  } else if (menuId === MenuIDs.LOCATION_INPUT) {
-    ScreenComponent = (
-      <LocationPicker
-        value={locationInput}
-        onChange={setLocationInput}
-        onSave={() => {
-          setClockSettings((s) => ({ ...s, location: locationInput }));
-          goBack();
-        }}
-        onCancel={goBack}
-        isPlaying={music.isPlaying}
-        hasActiveTrack={!!music.currentTrack}
-      />
-    );
-  } else if (menuId === MenuIDs.PLAYLIST_SEARCH) {
-    ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
-        <StatusBar
-          title="Search Playlist"
-          isPlaying={music.isPlaying}
-          hasActiveTrack={!!music.currentTrack}
-          theme="light"
-        />
-        <div className="flex-1 flex flex-col overflow-hidden w-full">
-          <div className="shrink-0 border-b border-gray-200 w-full">
-            <input
-              className="w-full px-4 py-4 text-lg font-semibold text-gray-900 placeholder-gray-400 border-none outline-none bg-white"
-              placeholder="Search songs..."
-              value={playlistSearchQuery}
-              onChange={(e) => setPlaylistSearchQuery(e.target.value)}
-              autoFocus
-            />
-          </div>
-          <MenuScreen
-            title=""
-            items={currentMenuItems}
-            selectedIndex={navState.selectedIndex}
-            onItemClick={(idx) => {
-              selectIndex(idx);
-              const item = currentMenuItems[idx];
-              if (item) executeItemAction(item);
-            }}
-            isPlaying={music.isPlaying}
-            hasActiveTrack={!!music.currentTrack}
-            hideTitle={true}
-          />
-        </div>
-      </div>
-    );
-  } else {
-    ScreenComponent = (
-      <MenuScreen
-        title={
-          menuId === MenuIDs.HOME
-            ? "Karan's iPod"
-            : menuId === MenuIDs.SETTINGS
-              ? 'Settings'
-              : menuId === MenuIDs.EXTRAS
-                ? 'Extras'
-                : menuId === MenuIDs.MUSIC
-                  ? 'Music'
-                  : menuId === MenuIDs.BACKLIGHT_SETTINGS
-                    ? 'Backlight Timer'
-                    : menuId
-                        .toLowerCase()
-                        .replace(/_/g, ' ')
-                        .replace(/\b\w/g, (l) => l.toUpperCase())
-        }
-        items={currentMenuItems}
-        selectedIndex={navState.selectedIndex}
-        onItemClick={(idx) => {
-          selectIndex(idx);
-          const item = currentMenuItems[idx];
-          if (item) executeItemAction(item);
-        }}
-        isPlaying={music.isPlaying}
-        hasActiveTrack={!!music.currentTrack}
-      />
-    );
-  }
+  // -- Screen Rendering via Extracted Router --
+  const ScreenComponent = (
+    <ScreenRouter
+      isBooting={isBooting}
+      serverStatus={serverStatus}
+      navState={navState}
+      currentMenuItems={currentMenuItems}
+      selectIndex={selectIndex}
+      executeItemAction={executeItemAction}
+      music={music}
+      favorites={favorites}
+      handlePlayPause={handlePlayPause}
+      handleToggleLike={handleToggleLike}
+      globalSearchResults={globalSearchResults}
+      isGlobalSearchLoading={isGlobalSearchLoading}
+      handleGlobalSearch={handleGlobalSearch}
+      globalSearchQuery={globalSearchQuery}
+      handleSearchSelect={handleSearchSelect}
+      clockSettings={clockSettings}
+      setClockSettings={setClockSettings}
+      goBack={goBack}
+      isEditingContact={isEditingContact}
+      contactForm={contactForm}
+      setContactForm={setContactForm}
+      selectedContact={selectedContact}
+      updateContact={updateContact}
+      addContact={addContact}
+      isEditingNote={isEditingNote}
+      noteForm={noteForm}
+      setNoteForm={setNoteForm}
+      selectedNote={selectedNote}
+      updateNote={updateNote}
+      addNote={addNote}
+      locationInput={locationInput}
+      setLocationInput={setLocationInput}
+      playlistSearchQuery={playlistSearchQuery}
+      setPlaylistSearchQuery={setPlaylistSearchQuery}
+      handlePlaylistSearchSelect={handlePlaylistSearchSelect}
+    />
+  );
 
   return (
     <div className="flex items-center justify-center min-h-dvh w-full p-4 overflow-hidden">
@@ -1228,7 +919,7 @@ const App = () => {
               top: '24px',
               left: '12px',
               width: '310px',
-              height: '339px',
+              height: '340px',
               border: '8px solid #000000',
               borderRadius: '5px',
               background: '#000',
@@ -1236,7 +927,7 @@ const App = () => {
             }}
           >
             <div className="w-full h-full relative bg-white flex flex-col text-black">
-              {isBooting ? <BootScreen status={serverStatus} /> : ScreenComponent}
+              {ScreenComponent}
               {!isBooting && (
                 <div
                   className="absolute inset-0 pointer-events-none z-50"
@@ -1264,10 +955,10 @@ const App = () => {
           <div
             className="absolute"
             style={{
-              top: '407px',
-              left: 'calc(50% - 125.46px + 0.46px)',
-              width: '250.92px',
-              height: '250.92px',
+              top: '412px',
+              left: '50px',
+              width: '250px',
+              height: '250px',
             }}
           >
             <ClickWheel
