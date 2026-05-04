@@ -169,12 +169,6 @@ const App = () => {
         const color = item.id.replace('set_color_', '');
         setChassisColor(color);
         localStorage.setItem('ipod_chassis_color', color);
-      } else if (navState.currentMenuId === MenuIDs.SETTINGS_CLOCK) {
-        if (item.id === 'time_format') setClockSettings((s) => ({ ...s, is24Hour: !s.is24Hour }));
-        if (item.id === 'show_seconds')
-          setClockSettings((s) => ({ ...s, showSeconds: !s.showSeconds }));
-        if (item.id === 'date_format')
-          setClockSettings((s) => ({ ...s, isLongDate: !s.isLongDate }));
       } else if (item.id === 'shuffle_songs') {
         const allSongs = [...librarySongs];
         if (allSongs.length > 0) {
@@ -282,19 +276,6 @@ const App = () => {
         ...item,
         label: item.id.replace('set_color_', '') === chassisColor ? `✓ ${item.label}` : item.label,
       }));
-    }
-
-    if (menuId === MenuIDs.SETTINGS_CLOCK) {
-      return ROOT_MENUS[menuId].map((item) => {
-        let label = item.label;
-        if (item.id === 'time_format')
-          label = `Time Format: ${clockSettings.is24Hour ? '24-hour' : '12-hour'}`;
-        if (item.id === 'show_seconds')
-          label = `Show Seconds: ${clockSettings.showSeconds ? 'On' : 'Off'}`;
-        if (item.id === 'date_format')
-          label = `Date Format: ${clockSettings.isLongDate ? 'Long' : 'Short'}`;
-        return { ...item, label };
-      });
     }
 
     if (menuId === MenuIDs.SEARCH) {

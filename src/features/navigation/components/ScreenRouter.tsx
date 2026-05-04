@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React from 'react';
 import { MenuIDs, MenuItem, Track, ClockSettings } from '@shared/types';
 import { MenuScreen } from '@features/navigation/components/MenuScreen';
@@ -85,7 +85,6 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
   setLocationInput,
   playlistSearchQuery,
   setPlaylistSearchQuery,
-  handlePlaylistSearchSelect,
 }) => {
   const menuId = navState.currentMenuId;
 
@@ -349,7 +348,7 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
                   : menuId
                       .toLowerCase()
                       .replace(/_/g, ' ')
-                      .replace(/\b\w/g, (l) => l.toUpperCase())
+                      .replace(/\b\w/g, (l: string) => l.toUpperCase())
       }
       items={currentMenuItems}
       selectedIndex={navState.selectedIndex}
