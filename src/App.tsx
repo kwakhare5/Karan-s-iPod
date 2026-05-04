@@ -346,44 +346,47 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.CONTACT_EDIT) {
     ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
+      <div className="w-full h-full flex flex-col" style={{ background: 'var(--ipod-bg)' }}>
         <StatusBar
           title={isEditingContact ? 'Edit Contact' : 'New Contact'}
           isPlaying={music.isPlaying}
           hasActiveTrack={!!music.currentTrack}
           theme="light"
         />
-        <div className="flex-1 flex flex-col gap-2 p-4">
+        <div className="flex-1 flex flex-col gap-[var(--space-2)] p-[var(--space-4)]">
           <input
-            className="border p-1 rounded text-sm text-black"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
             placeholder="First Name"
             value={contactForm.firstName}
             onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, firstName: e.target.value }))}
           />
           <input
-            className="border p-1 rounded text-sm text-black"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
             placeholder="Last Name"
             value={contactForm.lastName}
             onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, lastName: e.target.value }))}
           />
           <input
-            className="border p-1 rounded text-sm text-black"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
             placeholder="Phone"
             value={contactForm.phone}
             onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, phone: e.target.value }))}
           />
           <input
-            className="border p-1 rounded text-sm text-black"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
             placeholder="Email"
             value={contactForm.email}
             onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, email: e.target.value }))}
           />
-          <div className="flex gap-2 mt-2">
-            <button className="bg-gray-300 text-black p-1 rounded flex-1" onClick={goBack}>
+          <div className="flex gap-[var(--space-2)] mt-[var(--space-2)]">
+            <button 
+              className="bg-[var(--apple-gray-separator)] text-[var(--ipod-text)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-medium)]" 
+              onClick={goBack}
+            >
               Cancel
             </button>
             <button
-              className="bg-blue-500 text-white p-1 rounded flex-1"
+              className="bg-[var(--apple-blue)] text-[var(--apple-white)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-semibold)] shadow-sm"
               onClick={() => {
                 if (contactForm.firstName && contactForm.lastName) {
                   if (isEditingContact && selectedContact)
@@ -401,32 +404,35 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.NOTE_EDIT) {
     ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
+      <div className="w-full h-full flex flex-col" style={{ background: 'var(--ipod-bg)' }}>
         <StatusBar
           title={isEditingNote ? 'Edit Note' : 'New Note'}
           isPlaying={music.isPlaying}
           hasActiveTrack={!!music.currentTrack}
           theme="light"
         />
-        <div className="flex-1 flex flex-col gap-2 p-4">
+        <div className="flex-1 flex flex-col gap-[var(--space-2)] p-[var(--space-4)]">
           <input
-            className="border p-1 rounded text-sm text-black"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
             placeholder="Title"
             value={noteForm.title}
             onChange={(e) => setNoteForm((s: Partial<Note>) => ({ ...s, title: e.target.value }))}
           />
           <textarea
-            className="border p-1 rounded text-sm text-black flex-1 resize-none"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)] flex-1 resize-none ipod-scrollbar"
             placeholder="Content"
             value={noteForm.content}
             onChange={(e) => setNoteForm((s: Partial<Note>) => ({ ...s, content: e.target.value }))}
           />
-          <div className="flex gap-2 mt-2">
-            <button className="bg-gray-300 text-black p-1 rounded flex-1" onClick={goBack}>
+          <div className="flex gap-[var(--space-2)] mt-[var(--space-2)]">
+            <button 
+              className="bg-[var(--apple-gray-separator)] text-[var(--ipod-text)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-medium)]" 
+              onClick={goBack}
+            >
               Cancel
             </button>
             <button
-              className="bg-blue-500 text-white p-1 rounded flex-1"
+              className="bg-[var(--apple-blue)] text-[var(--apple-white)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-semibold)] shadow-sm"
               onClick={() => {
                 if (noteForm.title && noteForm.content) {
                   if (isEditingNote && selectedNote)
@@ -444,16 +450,16 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.LOCATION_INPUT) {
     ScreenComponent = (
-      <div className="w-full h-full bg-white flex flex-col">
+      <div className="w-full h-full flex flex-col" style={{ background: 'var(--ipod-bg)' }}>
         <StatusBar
           title="Set Location"
           isPlaying={music.isPlaying}
           hasActiveTrack={!!music.currentTrack}
           theme="light"
         />
-        <div className="flex-1 flex flex-col justify-center p-4">
+        <div className="flex-1 flex flex-col justify-center p-[var(--space-4)]">
           <input
-            className="border p-2 rounded w-full text-black mb-4"
+            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-3)] rounded-[var(--radius-sm)] w-full text-[16px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)] mb-[var(--space-4)]"
             placeholder="City Name"
             value={locationInput}
             onChange={(e) => setLocationInput(e.target.value)}
@@ -465,8 +471,8 @@ const App = () => {
             }}
             autoFocus
           />
-          <div className="flex gap-2">
-            <button onClick={goBack} className="bg-gray-300 text-black p-2 rounded flex-1">
+          <div className="flex gap-[var(--space-2)]">
+            <button onClick={goBack} className="bg-[var(--apple-gray-separator)] text-[var(--ipod-text)] p-[var(--space-3)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform">
               Cancel
             </button>
             <button
@@ -474,7 +480,7 @@ const App = () => {
                 setClockSettings((s) => ({ ...s, location: locationInput }));
                 goBack();
               }}
-              className="bg-blue-500 text-white p-2 rounded flex-1"
+              className="bg-[var(--apple-blue)] text-[var(--apple-white)] p-[var(--space-3)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform shadow-sm"
             >
               Save
             </button>
@@ -571,12 +577,12 @@ const App = () => {
             className="absolute overflow-hidden"
             style={{
               top: '24px',
-              left: '12px',
+              left: '16px',
               width: '310px',
-              height: '339px',
-              border: '8px solid #000000',
-              borderRadius: '5px',
-              background: '#000',
+              height: '340px',
+              border: '8px solid var(--ipod-screen-border)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--apple-black)',
               boxSizing: 'content-box',
             }}
           >
@@ -610,9 +616,9 @@ const App = () => {
             className="absolute"
             style={{
               top: '407px',
-              left: 'calc(50% - 125.46px + 0.46px)',
-              width: '250.92px',
-              height: '250.92px',
+              left: '54px', // Standardized whole number (358 - 250) / 2
+              width: '250px',
+              height: '250px',
             }}
           >
             <ClickWheel
