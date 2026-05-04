@@ -1,18 +1,20 @@
-import path from "node:path";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import path from 'node:path';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@shared': path.resolve(__dirname, './src/features/shared'),
     },
   },
   server: {
     proxy: {
-      "/api": {
-        target: "http://localhost:5001",
+      '/api': {
+        target: 'http://localhost:5001',
         changeOrigin: true,
       },
     },
