@@ -891,7 +891,7 @@ const App = () => {
             background: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E"), radial-gradient(18.13% 7.45% at 51.16% 64.58%, rgba(0, 0, 0, 0.1) 1.28%, rgba(0, 0, 0, 0) 87%), ${CHASSIS_GRADIENTS[chassisColor] || CHASSIS_GRADIENTS['silver']}`,
             backgroundBlendMode: 'overlay, normal, normal',
             boxShadow:
-              'inset 0px 4px 24px #FFFFFF, inset 0px 0px 32px rgba(233, 230, 224, 0.5), inset 0px -56px 100px rgba(46, 45, 45, 0.6)',
+              'inset 4px 4px 24px #FFFFFF, inset 0px 0px 32px rgba(233, 230, 224, 0.5), inset 8px -56px 100px rgba(46, 45, 45, 0.6)',
           }}
         >
           <div

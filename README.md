@@ -1,154 +1,131 @@
-# 🎵 Karan's iPod
+# 🎵 Karan's iPod Classic
 
 <p align="center">
-  <img src="screenshots/ipod_preview.png" width="600" alt="Karan's iPod Preview">
+  <img src="screenshots/ipod_preview.png" width="600" alt="iPod Preview" style="border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
 </p>
 
 <p align="center">
-  <b>Return to the golden era of portable music.</b><br>
-  A pixel-perfect, hardware-native iPod Classic emulator built with modern web technologies.
+  <a href="https://github.com/kwakhare5/Karan-s-iPod"><img src="https://img.shields.io/badge/Version-3.0.0-blue?style=for-the-badge" alt="Version"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react" alt="React"></a>
+  <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-6-646cff?style=for-the-badge&logo=vite" alt="Vite"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python" alt="Python"></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-3.0.0-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/React-19-61dafb.svg?logo=react" alt="React">
-  <img src="https://img.shields.io/badge/Vite-6-646cff.svg?logo=vite" alt="Vite">
-  <img src="https://img.shields.io/badge/Python-3.11-3776AB.svg?logo=python" alt="Python">
+  <b>Experience the nostalgia of the classic iPod, reimagined for the modern web.</b><br>
+  A high-fidelity, hardware-native emulator featuring a functional ClickWheel, real-time YouTube Music streaming, and a full productivity suite.
 </p>
 
 ---
 
-## ✨ Features
+## 🌟 Elite Features
 
-- **🎯 Hardware-Native Interaction**: Fully functional ClickWheel with high-fidelity circular scroll-and-click mechanics.
-- **🎧 Seamless Streaming**: Direct integration with YouTube Music via a specialized Python bridge (`ytmusicapi` + `yt-dlp`).
-- **📱 Responsive Excellence**: Optimized for desktop mouse interaction and mobile touch gestures with pixel-perfect integer alignment.
-- **📦 Full Ecosystem**: Includes a built-in Music Player, Search, Library Management, Clock, Notes, and a Contacts app.
-- **⚡ Performance First**: Built with Vite and React 19 for instantaneous navigation and smooth 60fps animations.
-- **🛠️ Self-Healing Backend**: Automated keep-awake strategy to prevent free-tier sleep on hosting providers.
-
----
-
-## 🎮 Navigation Guide
-
-The interface is designed to be tactile and intuitive, mirroring the original device logic.
-
-- **Wheel Scroll**: Move your mouse or finger in a circular motion around the wheel to navigate lists.
-- **MENU Button**: Navigate back to the previous screen or root menu.
-- **Center Button**: Select items, enter sub-menus, or play highlighted tracks.
-- **PLAY/PAUSE**: Instant playback toggle from any screen.
-- **Next/Prev**: Skip tracks or jump back with dedicated hardware-mapped buttons.
+- **🎯 Precision ClickWheel**: Meticulously engineered circular scroll-and-click mechanics with haptic visual feedback.
+- **🎧 Dynamic Streaming**: Robust Python backend bridge utilizing `ytmusicapi` and `yt-dlp` for high-quality audio fetching.
+- **📱 Universal Compatibility**: Fluid, responsive design optimized for desktop mouse precision and mobile touch gestures.
+- **📦 Feature-Rich Ecosystem**:
+  - **Music Player**: Interactive Now Playing screen with scrubber and volume control.
+  - **Global Search**: Search the entire YouTube Music library directly from the device.
+  - **Library Management**: Curated Artists, Albums, and Genres views with custom Playlist support.
+  - **Productivity**: Integrated Notes, Contacts, and Clock applications.
+- **⚡ Performance Core**: Built with **Vite** and **React 19** for sub-100ms transitions and buttery smooth 60fps animations.
+- **🛠️ Self-Healing Architecture**: Automated backend keep-awake logic ensures consistent availability on cloud providers.
 
 ---
 
-## 🚀 Quick Start
+## 🎮 Interface Guide
+
+The interaction model perfectly mirrors the original hardware logic:
+
+- **Circular Scroll**: Move your cursor/finger around the ClickWheel to navigate lists with precision.
+- **Center Button**: Select items, confirm actions, or trigger playback.
+- **MENU Button**: Navigate back through the hierarchy or return to the main menu.
+- **PLAY/PAUSE**: Instant playback control from any screen.
+- **Next/Prev**: Skip tracks or restart the current song using dedicated hardware mapping.
+
+---
+
+## 🏗️ Architectural Overview
+
+```mermaid
+graph TD
+    subgraph Frontend [React 19 Frontend]
+        A[iPod UI Engine] --> B[ClickWheel Controller]
+        A --> C[Screen Router]
+        A --> D[Music Player Hook]
+    end
+
+    subgraph Backend [Flask API Service]
+        E[Search & Metadata]
+        F[Audio Stream Proxy]
+        G[Library Aggregator]
+    end
+
+    D <-->|JSON/Audio| E
+    D <-->|Direct Stream| F
+    C <-->|Local Persistence| H[(Browser Storage)]
+    E <-->|YTMusic API| I[YouTube Music]
+    F <-->|yt-dlp| J[Audio Sources]
+```
+
+---
+
+## 🚀 Installation & Setup
 
 ### Prerequisites
 
 - **Node.js** (v18+)
 - **Python** (v3.11+)
 
-### Installation
+### 1. Clone & Initialize
 
-1. **Clone the Project**
+```bash
+git clone https://github.com/kwakhare5/Karan-s-iPod.git
+cd Karan-s-iPod
+npm install
+pip install -r backend/requirements.txt
+```
 
-   ```bash
-   git clone https://github.com/kwakhare5/Karan-s-Ipod.git
-   cd Karan-s-Ipod
-   ```
+### 2. Launch Development Environment
 
-2. **Setup Frontend**
+Run the following in separate terminal sessions:
 
-   ```bash
-   npm install
-   ```
-
-3. **Setup Backend**
-
-   ```bash
-   pip install -r backend/requirements.txt
-   ```
-
-4. **Environment Configuration**
-   Create a `.env.local` file in the root and add your keys:
-   ```env
-   GEMINI_API_KEY=your_key_here
-   ```
-
-### Running Locally
-
-Open two terminals and run:
-
-**Terminal 1: Backend**
+**Backend Service**
 
 ```bash
 npm run backend
 ```
 
-**Terminal 2: Frontend**
+**Frontend Application**
 
 ```bash
 npm run dev
 ```
 
-Visit **[localhost:5173](http://localhost:5173)** to start your journey.
+Visit **[localhost:5173](http://localhost:5173)** to begin.
 
 ---
 
-## 🏗️ Architecture
+## 🛠️ Elite Tech Stack
 
-```mermaid
-graph TD
-    A[React Frontend] -->|API Requests| B[Python Flask API]
-    B -->|ytmusicapi| C[YouTube Music Data]
-    B -->|yt-dlp| D[Audio Stream]
-    A -->|Local Storage| E[iPod Persistence]
-    B -->|Gemini AI| F[Smart Recommendations]
-```
-
----
-
-## 🛠️ Technology Stack
-
-| Layer           | Technology                                |
-| :-------------- | :---------------------------------------- |
-| **Framework**   | React 19 (Functional Components + Hooks)  |
-| **Language**    | TypeScript (Strict Mode)                  |
-| **Styling**     | Tailwind CSS (Utility-First Architecture) |
-| **Build Tool**  | Vite                                      |
-| **Backend**     | Python 3.11 / Flask                       |
-| **Audio**       | yt-dlp & ytmusicapi                       |
-| **Persistence** | LocalStorage (iPod Native Persistence)    |
+| Layer          | Technology                                                   |
+| :------------- | :----------------------------------------------------------- |
+| **Framework**  | React 19 (Server-Ready, Functional Components)               |
+| **Styling**    | Vanilla CSS + Tailwind (Design Token Architecture)           |
+| **State**      | React Context + Custom Hooks (useNavigation, useMusicPlayer) |
+| **Backend**    | Python 3.11 / Flask / Pydantic                               |
+| **Streaming**  | yt-dlp & ytmusicapi (v5 Direct Proxy Logic)                  |
+| **Build Tool** | Vite 6.0                                                     |
 
 ---
 
-## 📁 Project Structure
+## 📄 License
 
-```text
-Karan's iPod/
-├── src/
-│   ├── features/         # Domain-driven feature modules
-│   │   ├── music/        # Player, Search, Library
-│   │   ├── navigation/   # ClickWheel, Router, Menus
-│   │   ├── settings/     # Appearance, System Config
-│   │   └── extras/       # Notes, Contacts, Clock
-│   └── shared/           # Cross-cutting components & types
-├── backend/              # Unified Python API & Scripts
-├── public/               # High-fidelity assets & seed data
-└── package.json          # Dependency management
-```
-
----
-
-## 📄 License & Credits
-
-- This project is licensed under the **MIT License**.
-- Visually inspired by the iconic **Apple iPod Classic**.
-- Developed with meticulous attention to detail by **Karan**.
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
 <p align="center">
-  Built with ❤️ for the nostalgic music lover.
+  Designed & Engineered with ❤️ by <b>Karan</b>
 </p>

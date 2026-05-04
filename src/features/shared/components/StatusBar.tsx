@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import {} from 'lucide-react';
 
 interface StatusBarProps {
   title: string;
@@ -37,6 +36,8 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
     const activeBackground = background || (theme === 'dark' ? defaultDarkBg : defaultLightBg);
     const textColor = theme === 'dark' ? '#FFFFFF' : '#000000';
 
+    const batteryColor = batteryLevel < 20 ? '#FF3B30' : '#4CD964';
+
     return (
       <div
         className="w-full flex items-center justify-between shrink-0 z-20 select-none overflow-hidden"
@@ -45,7 +46,7 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
           background: activeBackground,
           padding: '0 12px',
           boxSizing: 'border-box',
-          borderBottom: '1px solid rgba(0,0,0,0.15)',
+          borderBottom: '2px solid rgba(0,0,0,0.16)',
         }}
       >
         {/* Left - Clock */}
@@ -83,24 +84,23 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
 
         {/* Right - Play/Pause indicator + Battery */}
         <div
-          className="flex justify-end items-center h-full pr-1"
+          className="flex justify-end items-center h-full pr-2"
           style={{ width: '82px', gap: '12px' }}
         >
           <style>
             {`
-                        @keyframes wave-1 { 0%, 100% { height: 6px; } 50% { height: 10px; } }
-                        @keyframes wave-2 { 0%, 100% { height: 8px; } 50% { height: 12px; } }
-                        @keyframes wave-3 { 0%, 100% { height: 10px; } 50% { height: 14px; } }
-                        .ref-bar { width: 2.5px; background: ${textColor}; border-radius: 4px; flex: none; }
-                        .wb-1 { animation: wave-1 0.8s ease-in-out infinite; }
-                        .wb-2 { animation: wave-2 0.6s ease-in-out infinite; animation-delay: 0.1s; }
-                        .wb-3 { animation: wave-3 0.7s ease-in-out infinite; animation-delay: 0.2s; }
-                    `}
+              @keyframes wave-1 { 0%, 100% { height: 6px; } 50% { height: 10px; } }
+              @keyframes wave-2 { 0%, 100% { height: 8px; } 50% { height: 12px; } }
+              @keyframes wave-3 { 0%, 100% { height: 10px; } 50% { height: 14px; } }
+              .ref-bar { width: 2px; background: ${textColor}; border-radius: 4px; flex: none; }
+              .wb-1 { animation: wave-1 0.8s ease-in-out infinite; }
+              .wb-2 { animation: wave-2 0.6s ease-in-out infinite; animation-delay: 0.2s; }
+              .wb-3 { animation: wave-3 0.8s ease-in-out infinite; animation-delay: 0.4s; }
+            `}
           </style>
-          {/* Playback Indicator Container - Fixed width for absolute stability */}
           <div
             style={{
-              width: '21px', // (5 bars * 2.5px) + (4 gaps * 2px) = 20.5px
+              width: '22px',
               height: '16px',
               display: 'flex',
               alignItems: 'center',
@@ -119,7 +119,6 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
             >
               {isPlaying ? (
                 <>
-                  {/* 5-bar symmetric dynamic sound wave */}
                   <div className="ref-bar wb-1" style={{ height: '6px' }} />
                   <div className="ref-bar wb-2" style={{ height: '10px' }} />
                   <div className="ref-bar wb-3" style={{ height: '14px' }} />
@@ -128,7 +127,6 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
                 </>
               ) : hasActiveTrack ? (
                 <>
-                  {/* 5-bar static sound wave for Pause state */}
                   <div className="ref-bar" style={{ height: '6px' }} />
                   <div className="ref-bar" style={{ height: '10px' }} />
                   <div className="ref-bar" style={{ height: '14px' }} />
@@ -145,9 +143,9 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
               style={{
                 width: '28px',
                 height: '14px',
-                border: `2px solid ${theme === 'dark' ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'}`,
-                borderRadius: '4.5px',
-                padding: '1.5px',
+                border: `2px solid ${theme === 'dark' ? 'rgba(255,255,255,0.46)' : 'rgba(0,0,0,0.46)'}`,
+                borderRadius: '4px',
+                padding: '2px',
                 display: 'flex',
                 alignItems: 'center',
                 boxSizing: 'border-box',
@@ -155,22 +153,22 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
             >
               <div
                 style={{
-                  width: `${batteryLevel}%`,
+                  width: `${Math.round(batteryLevel / 2) * 2}%`,
                   height: '100%',
-                  background: '#4CD964',
-                  borderRadius: '1px',
+                  background: batteryColor,
+                  borderRadius: '2px',
+                  transition: 'width 0.4s ease, background-color 0.4s ease',
                 }}
               />
             </div>
-            {/* Integrated Cap */}
             <div
               style={{
                 position: 'absolute',
-                right: '-3px',
+                right: '-4px',
                 top: '4px',
-                width: '2.5px',
+                width: '2px',
                 height: '6px',
-                background: theme === 'dark' ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)',
+                background: theme === 'dark' ? 'rgba(255,255,255,0.46)' : 'rgba(0,0,0,0.46)',
                 borderRadius: '0 2px 2px 0',
               }}
             />

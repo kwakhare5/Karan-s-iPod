@@ -41,22 +41,7 @@ export async function searchSongs(query: string): Promise<Song[]> {
   }
 }
 
-// NOTE: getAudioUrl, getPipedFallbackUrl, and fetchPipedAudioUrl
-// are NO LONGER NEEDED. The v6 Bulletproof Architecture uses the
-// official YouTube IFrame API embedded in useMusicPlayer.ts.
-// No proxying or backend streaming is necessary!
-
-export async function getAudioUrl(): Promise<string | null> {
-  console.warn('Deprecated: getAudioUrl called but app uses IFrame API.');
-  return null;
-}
-
-export async function getPipedFallbackUrl(): Promise<string | null> {
-  console.warn('Deprecated: getPipedFallbackUrl called but app uses IFrame API.');
-  return null;
-}
-
-export async function fetchPipedAudioUrl(): Promise<string | null> {
-  console.warn('Deprecated: fetchPipedAudioUrl called but app uses IFrame API.');
-  return null;
-}
+// NOTE: All previous audio URL fetching logic (getAudioUrl, getPipedFallbackUrl, etc.)
+// has been removed. The application now exclusively uses the official YouTube
+// IFrame API via useMusicPlayer.ts for playback, eliminating the need for
+// backend streaming or proxying.
