@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { Track } from '../../types';
-import { StatusBar } from '../core/StatusBar';
+import { Track } from '../types';
+import { StatusBar } from './StatusBar';
 import { Shuffle, Repeat, Heart, Loader2 } from 'lucide-react';
 
 interface NowPlayingScreenProps {
@@ -77,14 +77,14 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
       barRef.current?.setPointerCapture(e.pointerId);
       onSeek(frac(e.clientX));
     },
-    [onSeek, frac],
+    [onSeek, frac]
   );
 
   const onPM = useCallback(
     (e: React.PointerEvent) => {
       if (dragging.current) onSeek(frac(e.clientX));
     },
-    [onSeek, frac],
+    [onSeek, frac]
   );
 
   const onPU = useCallback(() => {
@@ -104,8 +104,11 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
     justifyContent: 'center',
     padding: 0,
     margin: 0,
-    transition: 'color 0.15s, transform 0.1s',
+    transition: 'color 0.15s',
   };
+
+  /* paddings */
+  const px = 16; // horizontal padding for the bottom section
 
   return (
     <div
@@ -116,7 +119,7 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
         flexDirection: 'column',
         overflow: 'hidden',
         userSelect: 'none',
-        background: 'var(--apple-black)',
+        background: 'linear-gradient(180deg, #2a2a2c 0%, #1a1a1c 100%)',
         position: 'relative',
       }}
     >
@@ -130,22 +133,22 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
             transform: 'translateX(-50%)',
             zIndex: 50,
             background: 'rgba(0,0,0,0.8)',
-            borderRadius: 'var(--radius-md)',
-            padding: 'var(--space-2) var(--space-4)',
+            borderRadius: 8,
+            padding: '8px 14px',
             display: 'flex',
             alignItems: 'center',
-            gap: 'var(--space-2)',
+            gap: 8,
             minWidth: 150,
             backdropFilter: 'blur(12px)',
           }}
         >
-          <span style={{ fontSize: 11, color: 'var(--apple-white)', fontWeight: 'var(--font-weight-medium)' }}>Vol</span>
+          <span style={{ fontSize: 11, color: '#fff', fontFamily: F }}>Vol</span>
           <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
             <div
               style={{
                 height: '100%',
                 width: `${Math.round(volume * 100)}%`,
-                background: 'var(--apple-white)',
+                background: '#fff',
                 borderRadius: 2,
                 transition: 'width 0.1s',
               }}
@@ -154,7 +157,8 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
           <span
             style={{
               fontSize: 9,
-              color: 'var(--apple-gray-light)',
+              color: '#8e8e93',
+              fontFamily: F,
               minWidth: 24,
               textAlign: 'right',
             }}
@@ -176,20 +180,19 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
           alignItems: 'center',
           position: 'relative',
           minHeight: 0,
-          background: '#1c1c1e',
+          background: '#1c1c1e', // Solid premium dark background
         }}
       >
         {/* -- Album Art -- */}
-        <div style={{ position: 'relative', zIndex: 1, flexShrink: 0, marginTop: 'var(--space-3)' }}>
+        <div style={{ position: 'relative', zIndex: 1, flexShrink: 0, marginTop: 12 }}>
           <div
             style={{
               width: 154,
               height: 154,
-              borderRadius: 'var(--radius-lg)',
+              borderRadius: 10,
               overflow: 'hidden',
               position: 'relative',
               border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 8px 16px rgba(0,0,0,0.4)',
             }}
           >
             <img
@@ -200,6 +203,7 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
                 height: '100%',
                 objectFit: 'cover',
                 display: 'block',
+                transform: 'scale(1.0)',
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -219,11 +223,11 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 40,
-                color: 'var(--apple-white)',
+                color: '#fff',
                 zIndex: -1,
               }}
             >
-              🎵
+              ??
             </div>
             {isLoading && (
               <div
@@ -235,9 +239,10 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   zIndex: 10,
+                  animation: 'fadeIn 0.5s ease-in-out', // Subtle fade to prevent flash
                 }}
               >
-                <Loader2 size={32} color="var(--apple-white)" className="animate-spin" />
+                <Loader2 size={32} color="#fff" className="animate-spin" />
               </div>
             )}
           </div>
@@ -251,18 +256,19 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
             width: '100%',
             textAlign: 'center',
             flexShrink: 0,
-            marginTop: 'var(--space-3)',
-            padding: '0 var(--space-4)',
+            marginTop: 12,
+            padding: `0 ${px}px`,
           }}
         >
           <div
             style={{
               fontSize: 14,
-              fontWeight: 'var(--font-weight-bold)',
-              color: 'var(--apple-white)',
+              fontWeight: 700,
+              color: '#fff',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              fontFamily: F,
               letterSpacing: '-0.015em',
             }}
           >
@@ -271,12 +277,13 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
           <div
             style={{
               fontSize: 12,
-              fontWeight: 'var(--font-weight-semibold)',
-              color: 'var(--apple-gray-light)',
-              marginTop: 4,
+              fontWeight: 600,
+              color: '#aeaeb2',
+              marginTop: 3,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              fontFamily: F,
               letterSpacing: '-0.01em',
             }}
           >
@@ -291,8 +298,8 @@ export const NowPlayingScreen: React.FC<NowPlayingScreenProps> = ({
             zIndex: 1,
             width: '100%',
             flexShrink: 0,
-            marginTop: 'auto',
-            padding: '0 var(--space-4) var(--space-6)',
+            marginTop: 'auto', // Pushes to bottom
+            padding: `0 ${px}px 26px`, // Increased bottom padding to lift icons up
           }}
         >
           {/* -- Scrubber -- */}

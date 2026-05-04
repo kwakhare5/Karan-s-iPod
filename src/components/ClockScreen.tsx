@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from './StatusBar';
-import { ClockSettings } from '../../types';
+import { ClockSettings } from '../types';
 
 interface ClockScreenProps {
   settings: ClockSettings;

@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { BacklightTimeout } from '../../types';
+
+export type BacklightTimeout = 5 | 10 | 20 | 0; // 0 = always on
 
 export const BACKLIGHT_OPTIONS: { value: BacklightTimeout; label: string }[] = [
-  { value: 2, label: '2 Seconds' },
   { value: 5, label: '5 Seconds' },
   { value: 10, label: '10 Seconds' },
-  { value: 30, label: '30 Seconds' },
-  { value: -1, label: 'Always On' },
+  { value: 20, label: '20 Seconds' },
+  { value: 0, label: 'Always On' },
 ];
 
 export const useBacklight = () => {

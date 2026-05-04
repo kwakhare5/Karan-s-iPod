@@ -1,5 +1,5 @@
 import React from 'react';
-import { useClickWheel } from '../../hooks/useClickWheel';
+import { useClickWheel } from '../hooks/useClickWheel';
 import { SkipBack, SkipForward, Play, Pause } from 'lucide-react';
 
 interface ClickWheelProps {
@@ -23,13 +23,15 @@ export const ClickWheel = React.memo<ClickWheelProps>(
     });
 
     // Colors from spec
-    // Wheel dimensions - rounded to whole numbers for stability
-    const WHEEL_SIZE = 250;
-    const CENTER_SIZE = 92;
+    const COLOR_NORMAL = '#9F9DB0';
+
+    // Wheel dimensions from spec
+    const WHEEL_SIZE = 250.92;
+    const CENTER_SIZE = 91.02;
 
     // Common button styles
     const buttonStyle =
-      'absolute z-10 flex items-center justify-center transition-all duration-75 outline-none touch-manipulation cursor-pointer active:scale-95';
+      'absolute z-10 flex items-center justify-center group transition-colors duration-75 outline-none touch-manipulation cursor-pointer';
 
     return (
       <div
@@ -46,7 +48,7 @@ export const ClickWheel = React.memo<ClickWheelProps>(
       >
         {/* The Wheel Surface (Background) */}
         <div
-          className="absolute inset-0 rounded-full overflow-hidden transition-all"
+          className="absolute inset-0 rounded-full overflow-hidden active:brightness-95 transition-all"
           style={{
             background: '#F6FAFB',
             boxShadow:
@@ -62,18 +64,20 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           }}
           className={`${buttonStyle} left-1/2 -translate-x-1/2`}
           style={{
-            top: '20px',
-            width: '64px',
+            top: '20px', // Optically centered
+            width: '60px',
             height: '40px',
-            color: 'var(--apple-gray)',
+            color: COLOR_NORMAL,
           }}
         >
           <span
             style={{
+              fontFamily: 'Inter',
               fontSize: '15px',
-              fontWeight: 'var(--font-weight-bold)',
-              letterSpacing: '0.05em',
+              fontWeight: 600,
+              letterSpacing: '0.05em', // Refined tracking
             }}
+            className="group-active:text-[#7C7A8D]"
           >
             MENU
           </span>
@@ -88,14 +92,15 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           className={`${buttonStyle} top-1/2 -translate-y-1/2`}
           style={{
             left: '18px',
-            width: '48px',
-            height: '48px',
-            color: 'var(--apple-gray)',
+            width: '50px',
+            height: '50px',
+            color: COLOR_NORMAL,
           }}
         >
           <SkipBack
             size={22}
             fill="currentColor"
+            className="group-active:text-[#7C7A8D] transition-colors"
           />
         </button>
 
@@ -108,14 +113,15 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           className={`${buttonStyle} top-1/2 -translate-y-1/2`}
           style={{
             right: '18px',
-            width: '48px',
-            height: '48px',
-            color: 'var(--apple-gray)',
+            width: '50px',
+            height: '50px',
+            color: COLOR_NORMAL,
           }}
         >
           <SkipForward
             size={22}
             fill="currentColor"
+            className="group-active:text-[#7C7A8D] transition-colors"
           />
         </button>
 
@@ -125,16 +131,18 @@ export const ClickWheel = React.memo<ClickWheelProps>(
             e.stopPropagation();
             onPlayPause();
           }}
-          className={`${buttonStyle} left-1/2 -translate-x-1/2 items-center gap-1`}
+          className={`${buttonStyle} left-1/2 -translate-x-1/2 items-end gap-1`}
           style={{
-            bottom: '20px',
-            width: '64px',
-            height: '32px',
-            color: 'var(--apple-gray)',
+            top: '200px', // Balanced against MENU
+            width: '60px',
+            height: '30px',
+            color: COLOR_NORMAL,
           }}
         >
-          <Play size={14} fill="currentColor" />
-          <Pause size={14} fill="currentColor" />
+          <div className="flex group-active:text-[#7C7A8D] transition-colors">
+            <Play size={15} fill="currentColor" />
+            <Pause size={15} fill="currentColor" className="-ml-1" />
+          </div>
         </button>
 
         {/* CENTER BUTTON (Select) - Inner Circle */}
@@ -146,7 +154,7 @@ export const ClickWheel = React.memo<ClickWheelProps>(
             e.stopPropagation();
             onSelect();
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full z-30 transition-all duration-75 active:scale-90 active:brightness-90 outline-none cursor-pointer"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full z-30 active:brightness-95 outline-none cursor-pointer"
           style={{
             width: `${CENTER_SIZE}px`,
             height: `${CENTER_SIZE}px`,
@@ -158,5 +166,5 @@ export const ClickWheel = React.memo<ClickWheelProps>(
         />
       </div>
     );
-  },
+  }
 );

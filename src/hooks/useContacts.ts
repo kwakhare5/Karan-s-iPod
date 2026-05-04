@@ -1,5 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Contact } from '../../types';
+
+export interface Contact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  email?: string;
+}
 
 const STORAGE_KEY = 'ipod_contacts';
 
@@ -30,8 +37,8 @@ export const useContacts = () => {
     };
     setContacts((prev) =>
       [...prev, newContact].sort((a, b) =>
-        `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
-      ),
+        `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
+      )
     );
     return newContact;
   }, []);
@@ -41,8 +48,8 @@ export const useContacts = () => {
       prev
         .map((c) => (c.id === id ? { ...c, ...updates } : c))
         .sort((a, b) =>
-          `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
-        ),
+          `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
+        )
     );
   }, []);
 
@@ -54,12 +61,12 @@ export const useContacts = () => {
     (id: string) => {
       return contacts.find((c) => c.id === id) || null;
     },
-    [contacts],
+    [contacts]
   );
 
   // Always sorted alphabetically - create a copy to avoid mutating state
   const sortedContacts = [...contacts].sort((a, b) =>
-    `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
+    `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
   );
 
   return {

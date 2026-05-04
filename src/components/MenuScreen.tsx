@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { MenuItem } from '../../types';
-import { StatusBar } from '../core/StatusBar';
+import { MenuItem } from '../types';
+import { StatusBar } from './StatusBar';
 import { ChevronRight } from 'lucide-react';
 
 interface MenuScreenProps {
@@ -80,7 +80,7 @@ export const MenuScreen: React.FC<MenuScreenProps> = React.memo(
       } else if (isItemBelowView) {
         container.scrollTop = Math.min(
           container.scrollHeight - containerHeight,
-          itemTop + itemHeight - containerHeight,
+          itemTop + itemHeight - containerHeight
         );
       }
 
@@ -108,34 +108,34 @@ export const MenuScreen: React.FC<MenuScreenProps> = React.memo(
                     itemRefs.current[index] = el;
                   }}
                   onClick={() => onItemClick && onItemClick(index)}
-                  className={`flex items-center justify-between px-[var(--space-4)] py-[var(--space-2)] min-h-[48px] border-b border-[var(--apple-gray-separator)] cursor-pointer overflow-hidden transition-colors ${
+                  className={`flex items-center justify-between px-4 py-2.5 min-h-[50px] border-b border-[#E5E5E5] cursor-pointer overflow-hidden ${
                     isSelected
-                      ? 'bg-[var(--state-selected)] text-[var(--apple-white)]'
-                      : 'bg-[var(--ipod-bg)] text-[var(--ipod-text)] hover:bg-[var(--state-hover)]'
+                      ? 'bg-[#007AFF] text-white'
+                      : 'bg-white text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <div
-                    className="flex-1 overflow-hidden flex items-center"
-                    style={{ whiteSpace: 'nowrap' }}
+                    className="flex-1 overflow-hidden"
+                    style={{ display: 'flex', whiteSpace: 'nowrap' }}
                   >
-                    <span className="text-[17px] font-[var(--font-weight-semibold)] tracking-[-0.015em] truncate flex-1">
+                    <span className="text-[17px] font-semibold tracking-[-0.015em] truncate flex-1">
                       {item.label}
                     </span>
                   </div>
                   {item.hasChevron && (
                     <ChevronRight
-                      size={20}
-                      className={`shrink-0 ml-[var(--space-2)] ${isSelected ? 'text-[var(--apple-white)]' : 'text-[var(--apple-gray-light)]'}`}
+                      size={24}
+                      className={`shrink-0 ml-2 ${isSelected ? 'text-white' : 'text-gray-300'}`}
                     />
                   )}
                 </div>
               );
             })}
-            <div className="h-[var(--space-4)] w-full"></div>
+            <div className="h-4 w-full"></div>
           </div>
           {footer && <div className="shrink-0">{footer}</div>}
         </div>
       </div>
     );
-  },
+  }
 );

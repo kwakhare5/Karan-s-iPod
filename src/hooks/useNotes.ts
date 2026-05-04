@@ -1,5 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Note } from '../../types';
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: number;
+  updatedAt: number;
+}
 
 const STORAGE_KEY = 'ipod_notes';
 
@@ -39,10 +46,10 @@ export const useNotes = () => {
   const updateNote = useCallback(
     (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
       setNotes((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, ...updates, updatedAt: Date.now() } : n)),
+        prev.map((n) => (n.id === id ? { ...n, ...updates, updatedAt: Date.now() } : n))
       );
     },
-    [],
+    []
   );
 
   const deleteNote = useCallback((id: string) => {
@@ -53,7 +60,7 @@ export const useNotes = () => {
     (id: string) => {
       return notes.find((n) => n.id === id) || null;
     },
-    [notes],
+    [notes]
   );
 
   return {

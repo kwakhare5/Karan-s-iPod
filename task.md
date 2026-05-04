@@ -1,8 +1,0 @@
-- [x] Add missing `kill` and `save` scripts to `package.json`
-- [x] Create `.env.local` for local environment variables
-- [x] Fix `API_BASE_URL` in `constants.ts` to support local backend
-- [x] Refactor `App.tsx` into feature-based components (Phase 1)
-- [x] Align async patterns with `try/catch`
-- [x] Extract `BootScreen` and other UI components from `App.tsx` (Phase 2)
-- [x] Remove dead streaming proxy code from `server.py`
-- [x] Consolidate App state into specialized hooks (`useLibrary`, `useSearch`) (Phase 3)

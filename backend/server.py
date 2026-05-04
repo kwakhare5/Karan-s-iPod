@@ -63,6 +63,155 @@ COMMON_HEADERS = {
     'Accept-Language': 'en-US,en;q=0.9',
 }
 
+PIPED_INSTANCES = [
+    'https://pipedapi.kavin.rocks',
+    'https://api-piped.mha.fi',
+    'https://pipedapi.adminforge.de',
+    'https://pipedapi.lunar.icu',
+    'https://api.piped.projectsegfau.lt',
+    'https://piped-api.garudalinux.org',
+]
+
+INVIDIOUS_INSTANCES = [
+    'https://iv.ggtyler.dev',
+    'https://inv.tux.rs',
+    'https://invidious.nerdvpn.de',
+]
+
+
+# ================================================
+#        PIPED / INVIDIOUS HELPERS
+# ================================================
+
+
+def _get_piped_info(video_id):
+    """Fetch stream info from Piped instances concurrently."""
+    def fetch_inst(inst):
+        try:
+            api_url = f'{inst}/streams/{video_id}'
+            resp = requests.get(
+                api_url, timeout=4, headers=COMMON_HEADERS
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                streams = data.get('audioStreams', [])
+                if streams:
+                    streams.sort(
+                        key=lambda x: (
+                            1 if 'mp4' in x.get('mimeType', '')
+                            else 0
+                        ),
+                        reverse=True,
+                    )
+                    return streams
+        except Exception:
+            pass
+        return None
+
+    workers = len(PIPED_INSTANCES)
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=workers
+    ) as executor:
+        fmap = {
+            executor.submit(fetch_inst, i): i
+            for i in PIPED_INSTANCES
+        }
+        for future in concurrent.futures.as_completed(fmap):
+            result = future.result()
+            if result:
+                print(f"[Piped] Won: {fmap[future]}")
+                return result
+    return []
+
+
+def _get_invidious_info(video_id):
+    """Fetch stream info from Invidious concurrently."""
+    def fetch_inst(inst):
+        try:
+            url = f'{inst}/api/v1/videos/{video_id}'
+            resp = requests.get(
+                url, timeout=4, headers=COMMON_HEADERS
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                streams = data.get('adaptiveFormats', [])
+                audio = [
+                    s for s in streams
+                    if 'audio/' in s.get('type', '')
+                ]
+                if audio:
+                    audio.sort(
+                        key=lambda x: int(
+                            x.get('bitrate', 0)
+                        ),
+                        reverse=True,
+                    )
+                    return audio
+        except Exception:
+            pass
+        return None
+
+    workers = len(INVIDIOUS_INSTANCES)
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=workers
+    ) as executor:
+        fmap = {
+            executor.submit(fetch_inst, i): i
+            for i in INVIDIOUS_INSTANCES
+        }
+        for future in concurrent.futures.as_completed(fmap):
+            result = future.result()
+            if result:
+                print(f"[Invidious] Won: {fmap[future]}")
+                return result
+    return []
+
+
+def _proxy_audio(audio_url):
+    """Proxy an audio URL through the backend."""
+    try:
+        hdrs = COMMON_HEADERS.copy()
+        hdrs['Referer'] = 'https://www.youtube.com/'
+        range_header = request.headers.get('Range')
+        if range_header:
+            hdrs['Range'] = range_header
+
+        req = requests.get(
+            audio_url, headers=hdrs, stream=True, timeout=10
+        )
+
+        if req.status_code >= 400:
+            print(f"[Proxy] Error {req.status_code}")
+            return None
+
+        def generate():
+            try:
+                for chunk in req.iter_content(
+                    chunk_size=32768
+                ):
+                    if chunk:
+                        yield chunk
+            except Exception as e:
+                print(f"[Proxy Stream Error] {e}")
+
+        res = Response(
+            stream_with_context(generate()),
+            status=req.status_code,
+        )
+        copy_headers = [
+            'Content-Type',
+            'Content-Length',
+            'Content-Range',
+            'Accept-Ranges',
+        ]
+        for k in copy_headers:
+            if k in req.headers:
+                res.headers[k] = req.headers[k]
+        return res
+    except Exception as e:
+        print(f"[Proxy Fatal] {e}")
+        return None
+
 
 # ================================================
 #                  SEARCH
@@ -120,7 +269,88 @@ def search():
         ), 500
 
 
+# ================================================
+#              STREAMING ENDPOINTS
+# ================================================
 
+
+@app.route('/api/stream-info/<video_id>')
+def stream_info(video_id):
+    """Return a direct playable URL from Piped/Invidious."""
+    ts = time.strftime('%H:%M:%S')
+    print(
+        f"\n[Stream-Info] v5 Direct Proxy "
+        f"for {video_id} at {ts}"
+    )
+
+    # Tier 1: Piped
+    streams = _get_piped_info(video_id)
+    for s in streams:
+        p_url = s.get('url')
+        if p_url:
+            print("[Stream-Info] Hit Tier 1 (Piped)")
+            return jsonify({
+                'url': p_url,
+                'source': 'piped',
+                'needs_proxy': False,
+            })
+
+    # Tier 2: Invidious
+    inv_streams = _get_invidious_info(video_id)
+    for s in inv_streams:
+        i_url = s.get('url')
+        if i_url:
+            print("[Stream-Info] Hit Tier 2 (Invidious)")
+            return jsonify({
+                'url': i_url,
+                'source': 'invidious',
+                'needs_proxy': False,
+            })
+
+    # Fallback
+    print("[Stream-Info] Providers exhausted")
+    return jsonify({
+        'url': f'/api/stream/{video_id}',
+        'source': 'fallback_proxy',
+        'needs_proxy': True,
+    })
+
+
+@app.route('/api/stream/<video_id>')
+def stream(video_id):
+    """Fallback proxy through Render."""
+    ts = time.strftime('%H:%M:%S')
+    print(f"\n[Fallback Stream] {video_id} at {ts}")
+
+    try:
+        print("[Fallback] yt-dlp...")
+        yt_url = (
+            f'https://www.youtube.com/watch?v={video_id}'
+        )
+        with _ydl_lock:
+            info = get_ydl().extract_info(
+                yt_url, download=False
+            )
+            audio_url = info.get('url')
+            if audio_url:
+                result = _proxy_audio(audio_url)
+                if result:
+                    return result
+
+        return jsonify(
+            {'error': 'All sources exhausted'}
+        ), 502
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/piped-stream/<video_id>')
+def piped_stream_manual(video_id):
+    """Legacy manual fallback endpoint."""
+    return jsonify(
+        {'url': f'/api/stream-info/{video_id}'}
+    ), 302
 
 
 # ================================================

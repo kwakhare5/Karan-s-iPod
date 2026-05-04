@@ -54,7 +54,7 @@ export const useClickWheel = ({
       stateRef.current.accumulatedDelta = 0;
       stateRef.current.lastScrollTime = Date.now();
     },
-    [enabled],
+    [enabled]
   );
 
   const handleMove = useCallback((clientX: number, clientY: number) => {

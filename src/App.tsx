@@ -1,64 +1,81 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { MenuIDs, Track, Contact, Note, BacklightTimeout } from './types';
-import { API_BASE_URL } from './constants';
-import { CHASSIS_GRADIENTS } from './constants/theme';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { MenuIDs, MenuItem, Track, MenuItemType, Playlist } from './types';
+import { ROOT_MENUS, API_BASE_URL } from './constants';
+import { MenuScreen } from './components/MenuScreen';
+import { ClockScreen } from './components/ClockScreen';
+import { ClickWheel } from './components/ClickWheel';
+import { NowPlayingScreen } from './components/NowPlayingScreen';
+import { SearchScreen } from './components/SearchScreen';
+import { StatusBar } from './components/StatusBar';
+import { useNavigation } from './hooks/useNavigation';
+import { useSettings } from './hooks/useSettings';
+import { useBacklight, BACKLIGHT_OPTIONS } from './hooks/useBacklight';
+import { useContacts } from './hooks/useContacts';
+import { useNotes } from './hooks/useNotes';
+import { useMusicPlayer } from './hooks/useMusicPlayer';
+import { searchSongs, Song } from './utils/musicApi';
+import { Artist } from './types';
 
-// Core
-import { BootScreen } from './features/core/BootScreen';
-import { ClockScreen } from './features/core/ClockScreen';
-import { ClickWheel } from './features/core/ClickWheel';
-import { StatusBar } from './features/core/StatusBar';
+const CHASSIS_GRADIENTS: Record<string, string> = {
+  silver: 'linear-gradient(197.05deg, #E2E2E2 3.73%, #AEAEAE 94.77%)',
+  blue: 'linear-gradient(197.05deg, #a1c4fd 3.73%, #5e99e8 94.77%)',
+  yellow: 'linear-gradient(197.05deg, #ffeb3b 3.73%, #fbc02d 94.77%)',
+  pink: 'linear-gradient(197.05deg, #ffcdd2 3.73%, #e57373 94.77%)',
+  red: 'linear-gradient(197.05deg, #ff5252 3.73%, #d32f2f 94.77%)',
+};
 
-// Music
-import { NowPlayingScreen } from './features/music/NowPlayingScreen';
-import { SearchScreen } from './features/music/SearchScreen';
-import { useMusicPlayer } from './features/music/useMusicPlayer';
-import { useLibrary } from './features/music/useLibrary';
-import { useSearch } from './features/music/useSearch';
-
-// Navigation
-import { MenuScreen } from './features/navigation/MenuScreen';
-import { useNavigation } from './features/navigation/useNavigation';
-import { useAppMenus } from './features/navigation/useAppMenus';
-
-// Contacts & Notes
-import { useContacts } from './features/contacts/useContacts';
-import { useNotes } from './features/notes/useNotes';
-
-// Settings
-import { useSettings } from './features/settings/useSettings';
-import { useBacklight } from './features/settings/useBacklight';
+const BootScreen = ({ status }: { status: string }) => (
+  <div className="w-full h-full bg-[#1a1a1a] flex flex-col items-center justify-center gap-6">
+    <img src="/apple_logo.png" alt="Apple Logo" className="w-24 h-24 object-contain" />
+    {status && (
+      <div className="text-white/40 text-xs font-mono tracking-widest animate-pulse uppercase">
+        {status}
+      </div>
+    )}
+  </div>
+);
 
 const App = () => {
-  const [scale, setScale] = useState(1);
+  const calculateScale = () => {
+    if (typeof window === 'undefined') return 0.75;
+    const isMobile = window.innerWidth < 768;
+    // We use a larger padding on desktop (48) vs mobile (16) to ensure the 
+    // iPod chassis has sufficient 'breathing room' on larger displays.
+    const padding = isMobile ? 16 : 48; 
+
+    // Use visualViewport if available for more accurate mobile dimensions (accounts for keyboard/bars)
+    const viewWidth = window.visualViewport?.width || window.innerWidth;
+    const viewHeight = window.visualViewport?.height || window.innerHeight;
+
+    const wRatio = (viewWidth - padding) / 358;
+    const hRatio = (viewHeight - padding) / 700;
+
+    const maxScale = isMobile ? 0.95 : 1.2;
+    const minScale = 0.3; // Allow scaling down further if needed on very small devices
+    return Math.max(minScale, Math.min(maxScale, wRatio, hRatio));
+  };
+
+  const [scale, setScale] = useState(calculateScale);
   const [isBooting, setIsBooting] = useState(true);
-  const [serverStatus, setServerStatus] = useState('Connecting to backend...');
+  const [serverStatus, setServerStatus] = useState<string>('');
 
   useEffect(() => {
-    const handleResize = () => {
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-      const baseHeight = 750;
-      const baseWidth = 400;
-      const scaleV = vh / baseHeight;
-      const scaleH = vw / baseWidth;
-      setScale(Math.min(scaleV, scaleH, 1.1));
-    };
-    handleResize();
+    const handleResize = () => setScale(calculateScale());
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { scroll, selectIndex, navigateTo, goBack, navState } = useNavigation();
-  const currentMenuId = navState.currentMenuId as MenuIDs;
-  const selectedIndex = navState.selectedIndex;
+  // Removed fixed timeout to sync booting with server wake state
 
+
+  // -- State Hooks --
+  const { navState, navigateTo, goBack, selectIndex, scroll } = useNavigation();
   const {
-    favorites,
     chassisColor,
-    clockSettings,
     setChassisColor,
+    clockSettings,
     setClockSettings,
+    favorites,
     toggleFavorite,
   } = useSettings();
   const { isDimmed, timeout: backlightTimeout, setBacklightTimeout } = useBacklight();
@@ -68,29 +85,109 @@ const App = () => {
   const musicRef = useRef(music);
   useEffect(() => {
     musicRef.current = music;
-  }, [music]);
-  const library = useLibrary();
-  const search = useSearch();
+  });
 
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
-  const [contactForm, setContactForm] = useState<Partial<Contact>>({
+  const [contactForm, setContactForm] = useState({
     firstName: '',
     lastName: '',
     phone: '',
     email: '',
   });
   const [isEditingContact, setIsEditingContact] = useState(false);
-  const [noteForm, setNoteForm] = useState<Partial<Note>>({ title: '', content: '' });
+  const [noteForm, setNoteForm] = useState({ title: '', content: '' });
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [locationInput, setLocationInput] = useState('');
+
+  // -- Library State --
+  const [libraryArtists, setLibraryArtists] = useState<Artist[]>([]);
+  // const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null); // Unused
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
+  const [addingToPlaylistId, setAddingToPlaylistId] = useState<string | null>(null);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+  const [selectedGenreId, setSelectedGenreId] = useState<string | null>(null);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  // genres removed (unused)
+  const [playlistSearchQuery, setPlaylistSearchQuery] = useState('');
 
   // Reset selection on search query change for "predictive" feel
   useEffect(() => {
     if (navState.currentMenuId === MenuIDs.PLAYLIST_SEARCH) {
       setTimeout(() => selectIndex(0), 0);
     }
-  }, [search.playlistSearchQuery, navState.currentMenuId, selectIndex]);
+  }, [playlistSearchQuery, navState.currentMenuId, selectIndex]);
+
+  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
+  const [librarySongs, setLibrarySongs] = useState<Track[]>([]);
+  const [globalSearchResults, setGlobalSearchResults] = useState<Track[]>([]);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [isGlobalSearchLoading, setIsGlobalSearchLoading] = useState(false);
+
+  // -- Memoized Sorted Data --
+  const sortedArtists = useMemo(() => {
+    return [...libraryArtists].sort((a, b) => a.name.localeCompare(b.name));
+  }, [libraryArtists]);
+
+  const sortedSongs = useMemo(() => {
+    return [...librarySongs].sort((a, b) => a.title.localeCompare(b.title));
+  }, [librarySongs]);
+
+  // We hydrate the library from localStorage first to provide an 
+  // 'instant-on' feel, then sync with the server in the background.
+  const fetchLibrary = useCallback(async () => {
+    try {
+      const cachedSongs = localStorage.getItem('ipod_library_songs');
+      const initialSongs = cachedSongs ? JSON.parse(cachedSongs) : [];
+      
+      const cachedArtists = localStorage.getItem('ipod_library_artists');
+      const initialArtists = cachedArtists ? JSON.parse(cachedArtists) : [];
+
+      if (Array.isArray(initialArtists) && initialArtists.length > 0) {
+        setLibraryArtists(initialArtists);
+      } else {
+        fetch('/top_artists.json').then(r => r.json()).then(d => {
+          if (Array.isArray(d)) setLibraryArtists(d);
+        }).catch(err => console.warn('Silent catch fallback:', err));
+      }
+
+      if (Array.isArray(initialSongs) && initialSongs.length > 0) {
+        setLibrarySongs(initialSongs);
+      } else {
+        fetch('/top_songs.json').then(r => r.json()).then(d => {
+          if (Array.isArray(d)) setLibrarySongs(d);
+        }).catch(err => console.warn('Silent catch fallback:', err));
+      }
+
+      // Async fetch to update cache in background
+      fetch(`${API_BASE_URL}/api/library/artists`)
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setLibraryArtists(data);
+            localStorage.setItem('ipod_library_artists', JSON.stringify(data));
+          }
+        }).catch(err => console.warn('Silent catch fallback:', err));
+
+      fetch(`${API_BASE_URL}/api/playlists`)
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data)) setPlaylists(data);
+        }).catch(err => console.warn('Silent catch fallback:', err));
+
+      fetch(`${API_BASE_URL}/api/library/songs`)
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setLibrarySongs(data);
+            localStorage.setItem('ipod_library_songs', JSON.stringify(data));
+          }
+        }).catch(err => console.warn('Silent catch fallback:', err));
+
+    } catch (e) {
+      console.error('Failed to fetch library', e);
+    }
+  }, []);
 
   useEffect(() => {
     const bootTimer = setTimeout(() => {
@@ -102,9 +199,10 @@ const App = () => {
         const res = await fetch(`${API_BASE_URL}/api/ping`);
         if (res.ok) {
           setServerStatus('');
+          console.log('Server is awake');
         }
-      } catch {
-        // Backend ping failed, potentially offline or server down
+      } catch (err) {
+        console.warn('Server ping failed', err);
       }
     };
 
@@ -116,144 +214,726 @@ const App = () => {
     };
   }, []);
 
-  // -- Interaction Handlers --
+  useEffect(() => {
+    // Wrap in timeout to avoid synchronous state update warning
+    const t = setTimeout(() => {
+      fetchLibrary();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [fetchLibrary]);
+
+  const renamePlaylist = useCallback(
+    async (id: string, oldName: string) => {
+      const name = prompt('Rename Playlist:', oldName);
+      if (name && name !== oldName) {
+        await fetch(`${API_BASE_URL}/api/playlists/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        });
+        fetchLibrary();
+      }
+    },
+    [fetchLibrary]
+  );
+
+  const deletePlaylist = useCallback(
+    async (id: string) => {
+      if (confirm('Are you sure you want to delete this playlist?')) {
+        await fetch(`${API_BASE_URL}/api/playlists/${id}`, { method: 'DELETE' });
+        fetchLibrary();
+        goBack();
+      }
+    },
+    [fetchLibrary, goBack]
+  );
+
+  // -- Menu Logic --
+  const executeItemAction = useCallback(
+    (item: MenuItem) => {
+      if (item.action) {
+        item.action();
+        return;
+      }
+      if (item.type === 'navigation' && item.targetMenuId) {
+        navigateTo(item.targetMenuId);
+      } else if (item.id.startsWith('set_color_')) {
+        setChassisColor(item.id.replace('set_color_', ''));
+      } else if (navState.currentMenuId === MenuIDs.SETTINGS_CLOCK) {
+        if (item.id === 'time_format') setClockSettings((s) => ({ ...s, is24Hour: !s.is24Hour }));
+        if (item.id === 'show_seconds')
+          setClockSettings((s) => ({ ...s, showSeconds: !s.showSeconds }));
+        if (item.id === 'date_format')
+          setClockSettings((s) => ({ ...s, isLongDate: !s.isLongDate }));
+      } else if (item.id === 'shuffle_songs') {
+        const allSongs = [...librarySongs];
+        if (allSongs.length > 0) {
+          // Create a truly random shuffle
+          for (let i = allSongs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allSongs[i], allSongs[j]] = [allSongs[j], allSongs[i]];
+          }
+          // Use toggleShuffle if needed, but here we just play from queue
+          music.playSong(allSongs[0], allSongs);
+          navigateTo(MenuIDs.NOW_PLAYING);
+        }
+      }
+    },
+    [navigateTo, setChassisColor, setClockSettings, navState.currentMenuId, librarySongs, music]
+  );
+
+  // -- Playback Orchestration --
+  /**
+   * Transitions the UI to the Now Playing screen when a song is selected.
+   * If the song is already active, we just navigate to avoid disrupting 
+   * the current playback state.
+   */
   const playOrNavigate = useCallback(
     (track: Track, queue: Track[]) => {
+      // If clicking the same song that's already playing, just go to Now Playing screen
+      if (music.currentTrack && music.currentTrack.videoId === track.videoId) {
+        navigateTo(MenuIDs.NOW_PLAYING);
+        return;
+      }
+
+      // Make sure shuffle is off if it was on
+      if (music.isShuffled) music.toggleShuffle();
       music.playSong(track, queue);
       navigateTo(MenuIDs.NOW_PLAYING);
     },
-    [music, navigateTo],
+    [music, navigateTo]
   );
 
-  const handleNext = useCallback(() => music.nextTrack(), [music]);
-  const handlePrev = useCallback(() => music.prevTrack(), [music]);
-  const handlePlayPause = useCallback(() => music.togglePlayPause(), [music]);
-
-  const menuActions = useMemo(
-    () => ({
-      navigateTo,
-      goBack,
-      setChassisColor,
-      setClockSettings,
-      setBacklightTimeout: (timeout: BacklightTimeout) => setBacklightTimeout(timeout),
-      playOrNavigate,
-      handleSearchSelect: (track: Track, results: Track[]) => {
-        playOrNavigate(track, results);
-        search.setGlobalSearchResults([]);
-      },
-      handlePlaylistSearchSelect: async (track: Track) => {
-        if (!library.addingToPlaylistId) return;
-        await library.addToPlaylist(library.addingToPlaylistId, track.videoId);
-      },
-      setSelectedArtistId: library.setSelectedArtistId,
-      setSelectedAlbumId: library.setSelectedAlbumId,
-      setSelectedPlaylistId: library.setSelectedPlaylistId,
-      setSelectedGenreId: library.setSelectedGenreId,
-      setAddingToPlaylistId: library.setAddingToPlaylistId,
-      setPlaylistSearchQuery: search.setPlaylistSearchQuery,
-      fetchLibrary: library.fetchLibrary,
-      renamePlaylist: library.renamePlaylist,
-      deletePlaylist: library.deletePlaylist,
-      setSelectedContact,
-      setIsEditingContact,
-      setContactForm,
-      deleteContact,
-      setSelectedNote,
-      setIsEditingNote,
-      setNoteForm,
-      deleteNote,
-      getContact: (id: string) => getContact(id) || undefined,
-      getNote: (id: string) => getNote(id) || undefined,
-    }),
-    [
-      navigateTo,
-      goBack,
-      setChassisColor,
-      setClockSettings,
-      setBacklightTimeout,
-      playOrNavigate,
-      library,
-      search,
-      setSelectedContact,
-      setIsEditingContact,
-      setContactForm,
-      deleteContact,
-      setSelectedNote,
-      setIsEditingNote,
-      setNoteForm,
-      deleteNote,
-      getContact,
-      getNote,
-    ],
+  const handleSearchSelect = useCallback(
+    (track: Track, results: Track[]) => {
+      playOrNavigate(track, results);
+      setGlobalSearchResults([]); // Clear results on navigate
+    },
+    [playOrNavigate]
   );
 
-  const currentMenuItems = useAppMenus({
-    navState: { currentMenuId },
-    music,
-    libraryArtists: library.libraryArtists,
-    librarySongs: library.librarySongs,
-    globalSearchResults: search.globalSearchResults,
+  const handlePlaylistSearchSelect = useCallback(
+    async (track: Track) => {
+      if (!addingToPlaylistId) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/playlists/${addingToPlaylistId}/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ songId: track.videoId }),
+        });
+        if (res.ok) {
+          await fetchLibrary();
+          // Removed goBack() to allow multi-add
+        }
+      } catch (err) {
+        console.error('Add to playlist failed', err);
+      }
+    },
+    [addingToPlaylistId, fetchLibrary]
+  );
+
+  const handleGlobalSearch = useCallback(
+    async (query: string) => {
+      setGlobalSearchQuery(query);
+      if (query.trim().length < 2) {
+        setGlobalSearchResults([]);
+        return;
+      }
+      setIsGlobalSearchLoading(true);
+      try {
+        const results = await searchSongs(query);
+        const tracks: Track[] = results.map((item: Song) => ({
+          videoId: item.id,
+          title: item.title,
+          artist: item.artist,
+          duration: item.duration,
+          thumbnailUrl: item.thumbnail,
+          thumbnailUrlBackup: item.thumbnailBackup,
+          album: 'Unknown',
+        }));
+        setGlobalSearchResults(tracks);
+        // Reset selection when search results come in
+        setTimeout(() => selectIndex(0), 0);
+      } catch (err) {
+        console.error('Global search failed', err);
+      } finally {
+        setIsGlobalSearchLoading(false);
+      }
+    },
+    [selectIndex]
+  );
+
+  const handlePlayPause = useCallback(() => {
+    if (music.currentTrack) music.togglePlayPause();
+  }, [music]);
+
+  const handleNext = useCallback(() => {
+    music.nextTrack();
+  }, [music]);
+  const handlePrev = useCallback(() => {
+    music.prevTrack();
+  }, [music]);
+
+  const handleToggleLike = useCallback(() => {
+    if (music.currentTrack) {
+      toggleFavorite({
+        id: music.currentTrack.videoId,
+        title: music.currentTrack.title,
+        artist: music.currentTrack.artist,
+        duration: music.currentTrack.duration,
+        url: '',
+        thumbnailUrl: music.currentTrack.thumbnailUrl || '',
+        albumId: music.currentTrack.album,
+      });
+    }
+  }, [music.currentTrack, toggleFavorite]);
+
+  // -- Menu Items --
+  const currentMenuItems = useMemo<MenuItem[]>(() => {
+    const menuId = navState.currentMenuId;
+
+    if (menuId === MenuIDs.HOME) {
+      return ROOT_MENUS[MenuIDs.HOME].filter((item) => {
+        if (item.id === 'now_playing') return !!music.currentTrack;
+        return true;
+      });
+    }
+    if (menuId === MenuIDs.MUSIC) return ROOT_MENUS[MenuIDs.MUSIC];
+    if (menuId === MenuIDs.SETTINGS) return ROOT_MENUS[MenuIDs.SETTINGS];
+    if (menuId === MenuIDs.EXTRAS) return ROOT_MENUS[MenuIDs.EXTRAS];
+
+    if (menuId === MenuIDs.SETTINGS_COLOR) {
+      return ROOT_MENUS[menuId].map((item) => ({
+        ...item,
+        label: item.id.replace('set_color_', '') === chassisColor ? `✓ ${item.label}` : item.label,
+      }));
+    }
+
+    if (menuId === MenuIDs.SETTINGS_CLOCK) {
+      return ROOT_MENUS[menuId].map((item) => {
+        let label = item.label;
+        if (item.id === 'time_format')
+          label = `Time Format: ${clockSettings.is24Hour ? '24-hour' : '12-hour'}`;
+        if (item.id === 'show_seconds')
+          label = `Show Seconds: ${clockSettings.showSeconds ? 'On' : 'Off'}`;
+        if (item.id === 'date_format')
+          label = `Date Format: ${clockSettings.isLongDate ? 'Long' : 'Short'}`;
+        return { ...item, label };
+      });
+    }
+
+    if (menuId === MenuIDs.SEARCH) {
+      return globalSearchResults.map(
+        (track): MenuItem => ({
+          id: track.videoId,
+          label: `${track.title} - ${track.artist}`,
+          type: 'action' as MenuItemType,
+          action: () => handleSearchSelect(track, globalSearchResults),
+        })
+      );
+    }
+
+    if (menuId === MenuIDs.FAVORITES) {
+      if (favorites.length === 0)
+        return [{ id: 'no_favs', label: 'No Favorites Yet', type: 'toggle' as MenuItemType }];
+      return favorites.map(
+        (fav): MenuItem => ({
+          id: fav.id,
+          label: `${fav.title} - ${fav.artist}`,
+          type: 'action' as MenuItemType,
+          action: () => {
+            const track: Track = {
+              videoId: fav.id,
+              title: fav.title,
+              artist: fav.artist,
+              duration: fav.duration,
+              url: '',
+              thumbnailUrl: fav.thumbnailUrl,
+              album: fav.albumId,
+            };
+            const favQueue = favorites.map((f) => ({
+              videoId: f.id,
+              title: f.title,
+              artist: f.artist,
+              duration: f.duration,
+              thumbnailUrl: f.thumbnailUrl,
+              album: f.albumId,
+            }));
+            playOrNavigate(track, favQueue);
+          },
+        })
+      );
+    }
+
+    if (menuId === MenuIDs.ARTISTS) {
+      if (sortedArtists.length === 0)
+        return [{ id: 'no_artists', label: 'No Artists Found', type: 'toggle' as MenuItemType }];
+      return sortedArtists.map(
+        (artist): MenuItem => ({
+          id: artist.id,
+          label: artist.name,
+          type: 'navigation' as MenuItemType,
+          targetMenuId: MenuIDs.ARTIST_DETAIL,
+          hasChevron: true,
+          action: () => {
+            setSelectedArtistId(artist.id);
+            navigateTo(MenuIDs.ARTIST_DETAIL);
+          },
+        })
+      );
+    }
+
+    if (menuId === MenuIDs.ARTIST_DETAIL && selectedArtistId) {
+      const targetArtistName =
+        libraryArtists.find((a) => a.id === selectedArtistId)?.name || selectedArtistId;
+      const artistSongs = librarySongs
+        .filter((s) => s.artistId === selectedArtistId || s.artist === targetArtistName)
+        .sort((a, b) => a.title.localeCompare(b.title));
+
+      if (artistSongs.length === 0)
+        return [{ id: 'no_songs', label: 'No songs found', type: 'toggle' }];
+      return artistSongs.map((song) => ({
+        id: song.videoId,
+        label: `${song.title} - ${song.artist}`,
+        type: 'action',
+        action: () => {
+          playOrNavigate(song, artistSongs);
+        },
+      }));
+    }
+
+    if (menuId === MenuIDs.ALBUMS) {
+      const albumMap = new Map<string, string>();
+      librarySongs.forEach((s) => {
+        if (s.album && !albumMap.has(s.album)) {
+          albumMap.set(s.album, s.artist || 'Unknown Artist');
+        }
+      });
+      const albumsArray = Array.from(albumMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+      return albumsArray.map(([album, artist]) => ({
+        id: `alb_${album}`,
+        label: `${album} - ${artist}`,
+        type: 'navigation',
+        targetMenuId: MenuIDs.ALBUM_DETAIL,
+        hasChevron: true,
+        action: () => {
+          setSelectedAlbumId(album);
+          navigateTo(MenuIDs.ALBUM_DETAIL);
+        },
+      }));
+    }
+
+    if (menuId === MenuIDs.ALBUM_DETAIL && selectedAlbumId) {
+      const albumSongs = librarySongs
+        .filter((s) => s.album === selectedAlbumId || s.albumId === selectedAlbumId)
+        .sort((a, b) => a.title.localeCompare(b.title));
+      if (albumSongs.length === 0)
+        return [{ id: 'no_songs', label: 'No songs found', type: 'toggle' }];
+      return albumSongs.map((song) => ({
+        id: song.videoId,
+        label: `${song.title} - ${song.artist}`,
+        type: 'action',
+        action: () => {
+          playOrNavigate(song, albumSongs);
+        },
+      }));
+    }
+
+    if (menuId === MenuIDs.PLAYLISTS) {
+      return [
+        {
+          id: 'create_playlist',
+          label: 'Create New Playlist',
+          type: 'action' as const,
+          action: async () => {
+            const name = prompt('Enter Playlist Name:');
+            if (name) {
+              const res = await fetch(`${API_BASE_URL}/api/playlists`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+              });
+              if (res.ok) fetchLibrary();
+            }
+          },
+        },
+        ...playlists.map(
+          (p): MenuItem => ({
+            id: p.id,
+            label: p.name,
+            type: 'navigation' as const,
+            targetMenuId: MenuIDs.PLAYLIST_DETAIL,
+            hasChevron: true,
+            action: () => {
+              setSelectedPlaylistId(p.id);
+              navigateTo(MenuIDs.PLAYLIST_DETAIL);
+            },
+          })
+        ),
+      ] as MenuItem[];
+    }
+
+    if (menuId === MenuIDs.PLAYLIST_DETAIL) {
+      if (!selectedPlaylistId) return [];
+      const playlist = playlists.find((p) => p.id === selectedPlaylistId);
+      if (!playlist) return [];
+      const playlistSongs = (playlist.songIds || [])
+        .map((sid) => librarySongs.find((s) => s.videoId === sid))
+        .filter(Boolean) as Track[];
+      return [
+        {
+          id: 'add_songs_search',
+          label: '+ Add Songs',
+          type: 'navigation' as const,
+          targetMenuId: MenuIDs.PLAYLIST_SEARCH,
+          action: () => {
+            setAddingToPlaylistId(selectedPlaylistId);
+            setPlaylistSearchQuery('');
+            navigateTo(MenuIDs.PLAYLIST_SEARCH);
+          },
+        },
+        ...playlistSongs.map(
+          (track): MenuItem => ({
+            id: track.videoId,
+            label: track.title,
+            type: 'action' as const,
+            action: () => {
+              playOrNavigate(track, playlistSongs);
+            },
+          })
+        ),
+        {
+          id: 'rename_playlist',
+          label: 'Rename Playlist',
+          type: 'action' as const,
+          action: () => renamePlaylist(playlist.id, playlist.name),
+        },
+        {
+          id: 'delete_playlist',
+          label: 'Delete Playlist',
+          type: 'action' as const,
+          action: () => deletePlaylist(playlist.id),
+        },
+      ] as MenuItem[];
+    }
+
+    if (menuId === MenuIDs.PLAYLIST_SEARCH) {
+      const results = librarySongs
+        .filter(
+          (s) =>
+            s.title.toLowerCase().includes(playlistSearchQuery.toLowerCase()) ||
+            s.artist.toLowerCase().includes(playlistSearchQuery.toLowerCase())
+        )
+        .slice(0, 15);
+
+      const playlist = playlists.find((p) => p.id === addingToPlaylistId);
+      const songIds = playlist?.songIds || [];
+
+      return results.map(
+        (track): MenuItem => ({
+          id: track.videoId,
+          label: songIds.includes(track.videoId) ? `✓ ${track.title}` : track.title,
+          type: 'action',
+          action: () => handlePlaylistSearchSelect(track),
+        })
+      );
+    }
+
+    if (menuId === MenuIDs.GENRES) {
+      const availableGenres = Array.from(
+        new Set(librarySongs.map((s) => s.genre).filter(Boolean))
+      ) as string[];
+      if (availableGenres.length === 0)
+        return [{ id: 'no_genres', label: 'No Genres Found', type: 'toggle' as MenuItemType }];
+      return availableGenres.sort().map(
+        (g): MenuItem => ({
+          id: g,
+          label: g,
+          type: 'navigation' as MenuItemType,
+          targetMenuId: MenuIDs.GENRE_DETAIL,
+          hasChevron: true,
+          action: () => {
+            setSelectedGenreId(g);
+            navigateTo(MenuIDs.GENRE_DETAIL);
+          },
+        })
+      );
+    }
+
+    if (menuId === MenuIDs.GENRE_DETAIL && selectedGenreId) {
+      const genreSongs = librarySongs
+        .filter((s) => s.genre === selectedGenreId)
+        .sort((a, b) => a.title.localeCompare(b.title));
+      if (genreSongs.length === 0)
+        return [{ id: 'no_songs', label: 'No songs found', type: 'toggle' as MenuItemType }];
+      return genreSongs.map(
+        (song): MenuItem => ({
+          id: song.videoId,
+          label: song.title,
+          type: 'action' as MenuItemType,
+          action: () => {
+            playOrNavigate(song, genreSongs);
+          },
+        })
+      );
+    }
+
+    if (menuId === MenuIDs.SONGS) {
+      return sortedSongs.map((song) => ({
+        id: song.videoId,
+        label: `${song.title} - ${song.artist}`,
+        type: 'action',
+        action: () => {
+          playOrNavigate(song, sortedSongs);
+        },
+      }));
+    }
+
+    if (menuId === MenuIDs.BACKLIGHT_SETTINGS) {
+      return BACKLIGHT_OPTIONS.map((opt) => ({
+        id: `bl_${opt.value}`,
+        label: backlightTimeout === opt.value ? `✓ ${opt.label}` : opt.label,
+        type: 'action' as const,
+        action: () => setBacklightTimeout(opt.value),
+      }));
+    }
+
+    if (menuId === MenuIDs.CONTACTS) {
+      const items: MenuItem[] = [
+        {
+          id: 'add_contact',
+          label: 'Add Contact',
+          type: 'navigation',
+          targetMenuId: MenuIDs.CONTACT_ADD,
+          action: () => {
+            setContactForm({ firstName: '', lastName: '', phone: '', email: '' });
+            setIsEditingContact(false);
+            setSelectedContact(null);
+            navigateTo(MenuIDs.CONTACT_EDIT);
+          },
+        },
+      ];
+      contacts
+        .sort((a, b) => (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName))
+        .forEach((c) => {
+          items.push({
+            id: c.id,
+            label: `${c.firstName} ${c.lastName}`,
+            type: 'navigation',
+            targetMenuId: MenuIDs.CONTACT_DETAIL,
+            hasChevron: true,
+            action: () => {
+              setSelectedContact(c.id);
+              navigateTo(MenuIDs.CONTACT_DETAIL);
+            },
+          });
+        });
+      return items;
+    }
+
+    if (menuId === MenuIDs.CONTACT_DETAIL && selectedContact) {
+      const contact = getContact(selectedContact);
+      if (!contact)
+        return [{ id: 'not_found', label: 'Contact Not Found', type: 'toggle' as MenuItemType }];
+      return [
+        {
+          id: 'c_name',
+          label: `Name: ${contact.firstName} ${contact.lastName}`,
+          type: 'toggle' as MenuItemType,
+        },
+        { id: 'c_phone', label: `Phone: ${contact.phone || ''}`, type: 'toggle' as MenuItemType },
+        { id: 'c_email', label: `Email: ${contact.email || ''}`, type: 'toggle' as MenuItemType },
+        {
+          id: 'edit_contact',
+          label: 'Edit Contact',
+          type: 'action' as MenuItemType,
+          action: () => {
+            setContactForm({
+              firstName: contact.firstName,
+              lastName: contact.lastName,
+              phone: contact.phone || '',
+              email: contact.email || '',
+            });
+            setIsEditingContact(true);
+            navigateTo(MenuIDs.CONTACT_EDIT);
+          },
+        },
+        {
+          id: 'delete_contact',
+          label: 'Delete Contact',
+          type: 'action' as MenuItemType,
+          action: () => {
+            deleteContact(selectedContact);
+            goBack();
+          },
+        },
+      ];
+    }
+
+    if (menuId === MenuIDs.NOTES_LIST) {
+      const items: MenuItem[] = [
+        {
+          id: 'add_note',
+          label: 'Add Note',
+          type: 'navigation' as const,
+          targetMenuId: MenuIDs.NOTE_ADD,
+          action: () => {
+            setNoteForm({ title: '', content: '' });
+            setIsEditingNote(false);
+            setSelectedNote(null);
+            navigateTo(MenuIDs.NOTE_EDIT);
+          },
+        },
+      ];
+      notes.forEach((n) => {
+        items.push({
+          id: n.id,
+          label: n.title,
+          type: 'navigation' as const,
+          targetMenuId: MenuIDs.NOTE_DETAIL,
+          hasChevron: true,
+          action: () => {
+            setSelectedNote(n.id);
+            navigateTo(MenuIDs.NOTE_DETAIL);
+          },
+        });
+      });
+      return items;
+    }
+
+    if (menuId === MenuIDs.NOTE_DETAIL && selectedNote) {
+      const note = getNote(selectedNote);
+      if (!note)
+        return [
+          { id: 'not_found', label: 'Note Not Found', type: 'toggle' as const },
+        ] as MenuItem[];
+      const lines = note.content.split('\n');
+      return [
+        { id: 'note_title', label: `📝 ${note.title}`, type: 'toggle' as const },
+        ...lines.map(
+          (line, i): MenuItem => ({ id: `line_${i}`, label: line || ' ', type: 'toggle' as const })
+        ),
+        {
+          id: 'edit_note',
+          label: 'Edit Note',
+          type: 'action' as const,
+          action: () => {
+            setNoteForm({ title: note.title, content: note.content });
+            setIsEditingNote(true);
+            navigateTo(MenuIDs.NOTE_EDIT);
+          },
+        },
+        {
+          id: 'delete_note',
+          label: 'Delete Note',
+          type: 'action' as const,
+          action: () => {
+            deleteNote(selectedNote);
+            goBack();
+          },
+        },
+      ] as MenuItem[];
+    }
+
+    if (ROOT_MENUS[navState.currentMenuId]) return ROOT_MENUS[navState.currentMenuId];
+
+    return [];
+  }, [
+    navState.currentMenuId,
+    playlists,
+    selectedPlaylistId,
+    sortedSongs,
+    navigateTo,
+    addingToPlaylistId,
+    playlistSearchQuery,
+    handlePlaylistSearchSelect,
+    selectedGenreId,
+    globalSearchResults,
+    handleSearchSelect,
     favorites,
-    playlists: library.playlists,
+    sortedArtists,
+    selectedArtistId,
+    librarySongs,
+    libraryArtists,
+    notes,
+    selectedNote,
+    getNote,
+    deleteNote,
+    goBack,
+    contacts,
+    selectedContact,
+    getContact,
+    deleteContact,
     chassisColor,
     clockSettings,
     backlightTimeout,
-    selectedArtistId: library.selectedArtistId,
-    selectedAlbumId: library.selectedAlbumId,
-    selectedPlaylistId: library.selectedPlaylistId,
-    selectedGenreId: library.selectedGenreId,
-    addingToPlaylistId: library.addingToPlaylistId,
-    playlistSearchQuery: search.playlistSearchQuery,
-    contacts,
-    notes,
-    selectedContact,
-    selectedNote,
-    actions: menuActions,
-  });
+    setBacklightTimeout,
+    selectedAlbumId,
+    fetchLibrary,
+    renamePlaylist,
+    deletePlaylist,
+    playOrNavigate,
+    music,
+  ]);
 
+  // -- Interaction Handlers --
   const handleMenuSelect = useCallback(() => {
     if (isBooting) return;
-    const menuId = currentMenuId;
+    const menuId = navState.currentMenuId;
+
+    // Handle screens with non-list interactions
     if (menuId === MenuIDs.NOW_PLAYING) {
       handlePlayPause();
       return;
     }
-    const selectedItem = currentMenuItems[selectedIndex];
-    if (selectedItem) {
-      if (selectedItem.id === 'play_pause') handlePlayPause();
-      else if (selectedItem.action) selectedItem.action();
-      else if (selectedItem.targetMenuId) navigateTo(selectedItem.targetMenuId as MenuIDs);
+    if (menuId === MenuIDs.CLOCK) {
+      setClockSettings((s) => ({ ...s, is24Hour: !s.is24Hour }));
+      return;
     }
-  }, [isBooting, currentMenuId, selectedIndex, currentMenuItems, handlePlayPause, navigateTo]);
+
+    const selectedItem = currentMenuItems[navState.selectedIndex];
+    if (!selectedItem) return;
+
+    if (selectedItem.id === 'play_pause') {
+      handlePlayPause();
+      return;
+    }
+    executeItemAction(selectedItem);
+  }, [
+    isBooting,
+    navState.currentMenuId,
+    navState.selectedIndex,
+    currentMenuItems,
+    executeItemAction,
+    handlePlayPause,
+    setClockSettings,
+  ]);
 
   const handleScroll = useCallback(
     (direction: 'cw' | 'ccw') => {
       if (isBooting) return;
       const m = musicRef.current;
-      if (currentMenuId === MenuIDs.NOW_PLAYING && m.currentTrack) {
+      if (navState.currentMenuId === MenuIDs.NOW_PLAYING && m.currentTrack) {
         const step = 0.05;
+        // Round to nearest 0.05 to prevent floating point drift
         const newVol = Math.round((m.volume + (direction === 'cw' ? step : -step)) * 20) / 20;
         m.setVolume(newVol);
       } else {
         scroll(direction, currentMenuItems.length);
       }
     },
-    [isBooting, currentMenuId, scroll, currentMenuItems.length],
+    [isBooting, navState.currentMenuId, scroll, currentMenuItems.length]
   );
 
-  const handleBack = useCallback(() => goBack(), [goBack]);
+  const handleBack = useCallback(() => {
+    goBack();
+  }, [goBack]);
 
-  const handleGlobalSearch = useCallback(
-    async (query: string) => {
-      await search.handleGlobalSearch(query);
-      setTimeout(() => selectIndex(0), 0);
-    },
-    [search, selectIndex],
-  );
-
+  // -- Keyboard Support --
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tagName = (document.activeElement?.tagName || '').toLowerCase();
+      // Allow Arrows and Enter to navigate even when in search bar
       if (
         (tagName === 'input' || tagName === 'textarea') &&
         !['ArrowUp', 'ArrowDown', 'Enter'].includes(e.key)
@@ -270,8 +950,9 @@ const App = () => {
           'Backspace',
           'Escape',
         ].includes(e.key)
-      )
+      ) {
         e.preventDefault();
+      }
       switch (e.key) {
         case 'ArrowDown':
         case 'ArrowRight':
@@ -286,6 +967,8 @@ const App = () => {
           break;
         case 'Backspace':
         case 'Escape':
+        case 'm':
+        case 'M':
           handleBack();
           break;
         case ' ':
@@ -297,8 +980,9 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleScroll, handleMenuSelect, handleBack, handlePlayPause]);
 
+  // -- Screen Rendering --
   let ScreenComponent;
-  const menuId = currentMenuId;
+  const menuId = navState.currentMenuId;
 
   if (menuId === MenuIDs.NOW_PLAYING && music.currentTrack) {
     ScreenComponent = (
@@ -311,28 +995,39 @@ const App = () => {
         duration={music.duration}
         isShuffled={music.isShuffled}
         repeatMode={music.repeatMode}
-        isLiked={favorites.some((f) => f.videoId === music.currentTrack!.videoId)}
+        isLiked={favorites.some((f) => f.id === music.currentTrack!.videoId)}
         onTogglePlay={handlePlayPause}
         onToggleShuffle={music.toggleShuffle}
         onToggleRepeat={music.toggleRepeat}
-        onToggleLike={() => music.currentTrack && toggleFavorite(music.currentTrack)}
+        onToggleLike={handleToggleLike}
         onSeek={music.seekTo}
         volume={music.volume}
         queueIndex={music.queueIndex}
         queueLength={music.queue.length}
       />
     );
+  } else if (menuId === MenuIDs.NOW_PLAYING && !music.currentTrack) {
+    ScreenComponent = (
+      <div className="w-full h-full bg-white flex flex-col">
+        <StatusBar title="Now Playing" isPlaying={false} hasActiveTrack={false} theme="light" />
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#1c1c1e] text-white/50">
+          <div className="text-5xl mb-4">🎵</div>
+          <div className="text-sm">No track playing</div>
+          <div className="text-xs mt-1">Search for music to start</div>
+        </div>
+      </div>
+    );
   } else if (menuId === MenuIDs.SEARCH) {
     ScreenComponent = (
       <SearchScreen
-        selectedIndex={selectedIndex}
+        selectedIndex={navState.selectedIndex}
         isPlaying={music.isPlaying}
         hasActiveTrack={!!music.currentTrack}
-        onSelectResult={(track, results) => menuActions.handleSearchSelect(track, results)}
-        results={search.globalSearchResults}
-        isLoading={search.isGlobalSearchLoading}
+        onSelectResult={handleSearchSelect}
+        results={globalSearchResults}
+        isLoading={isGlobalSearchLoading}
         onSearch={handleGlobalSearch}
-        query={search.globalSearchQuery}
+        query={globalSearchQuery}
       />
     );
   } else if (menuId === MenuIDs.CLOCK) {
@@ -346,52 +1041,49 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.CONTACT_EDIT) {
     ScreenComponent = (
-      <div className="w-full h-full flex flex-col" style={{ background: 'var(--ipod-bg)' }}>
+      <div className="w-full h-full bg-white flex flex-col">
         <StatusBar
           title={isEditingContact ? 'Edit Contact' : 'New Contact'}
           isPlaying={music.isPlaying}
           hasActiveTrack={!!music.currentTrack}
           theme="light"
         />
-        <div className="flex-1 flex flex-col gap-[var(--space-2)] p-[var(--space-4)]">
+        <div className="flex-1 flex flex-col gap-2 p-4">
           <input
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
+            className="border p-1 rounded text-sm text-black"
             placeholder="First Name"
             value={contactForm.firstName}
-            onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, firstName: e.target.value }))}
+            onChange={(e) => setContactForm((s) => ({ ...s, firstName: e.target.value }))}
           />
           <input
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
+            className="border p-1 rounded text-sm text-black"
             placeholder="Last Name"
             value={contactForm.lastName}
-            onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, lastName: e.target.value }))}
+            onChange={(e) => setContactForm((s) => ({ ...s, lastName: e.target.value }))}
           />
           <input
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
+            className="border p-1 rounded text-sm text-black"
             placeholder="Phone"
             value={contactForm.phone}
-            onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, phone: e.target.value }))}
+            onChange={(e) => setContactForm((s) => ({ ...s, phone: e.target.value }))}
           />
           <input
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
+            className="border p-1 rounded text-sm text-black"
             placeholder="Email"
             value={contactForm.email}
-            onChange={(e) => setContactForm((s: Partial<Contact>) => ({ ...s, email: e.target.value }))}
+            onChange={(e) => setContactForm((s) => ({ ...s, email: e.target.value }))}
           />
-          <div className="flex gap-[var(--space-2)] mt-[var(--space-2)]">
-            <button 
-              className="bg-[var(--apple-gray-separator)] text-[var(--ipod-text)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-medium)]" 
-              onClick={goBack}
-            >
+          <div className="flex gap-2 mt-2">
+            <button className="bg-gray-300 text-black p-1 rounded flex-1" onClick={goBack}>
               Cancel
             </button>
             <button
-              className="bg-[var(--apple-blue)] text-[var(--apple-white)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-semibold)] shadow-sm"
+              className="bg-blue-500 text-white p-1 rounded flex-1"
               onClick={() => {
-                if (contactForm.firstName && contactForm.lastName) {
+                if (contactForm.firstName) {
                   if (isEditingContact && selectedContact)
                     updateContact(selectedContact, contactForm);
-                  else addContact(contactForm as Omit<Contact, 'id'>);
+                  else addContact(contactForm);
                   goBack();
                 }
               }}
@@ -404,37 +1096,34 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.NOTE_EDIT) {
     ScreenComponent = (
-      <div className="w-full h-full flex flex-col" style={{ background: 'var(--ipod-bg)' }}>
+      <div className="w-full h-full bg-white flex flex-col">
         <StatusBar
           title={isEditingNote ? 'Edit Note' : 'New Note'}
           isPlaying={music.isPlaying}
           hasActiveTrack={!!music.currentTrack}
           theme="light"
         />
-        <div className="flex-1 flex flex-col gap-[var(--space-2)] p-[var(--space-4)]">
+        <div className="flex-1 flex flex-col gap-2 p-4">
           <input
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)]"
+            className="border p-1 rounded text-sm text-black"
             placeholder="Title"
             value={noteForm.title}
-            onChange={(e) => setNoteForm((s: Partial<Note>) => ({ ...s, title: e.target.value }))}
+            onChange={(e) => setNoteForm((s) => ({ ...s, title: e.target.value }))}
           />
           <textarea
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-2)] rounded-[var(--radius-sm)] text-[14px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)] flex-1 resize-none ipod-scrollbar"
+            className="border p-1 rounded text-sm text-black flex-1 resize-none"
             placeholder="Content"
             value={noteForm.content}
-            onChange={(e) => setNoteForm((s: Partial<Note>) => ({ ...s, content: e.target.value }))}
+            onChange={(e) => setNoteForm((s) => ({ ...s, content: e.target.value }))}
           />
-          <div className="flex gap-[var(--space-2)] mt-[var(--space-2)]">
-            <button 
-              className="bg-[var(--apple-gray-separator)] text-[var(--ipod-text)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-medium)]" 
-              onClick={goBack}
-            >
+          <div className="flex gap-2 mt-2">
+            <button className="bg-gray-300 text-black p-1 rounded flex-1" onClick={goBack}>
               Cancel
             </button>
             <button
-              className="bg-[var(--apple-blue)] text-[var(--apple-white)] p-[var(--space-2)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform font-[var(--font-weight-semibold)] shadow-sm"
+              className="bg-blue-500 text-white p-1 rounded flex-1"
               onClick={() => {
-                if (noteForm.title && noteForm.content) {
+                if (noteForm.title) {
                   if (isEditingNote && selectedNote)
                     updateNote(selectedNote, { title: noteForm.title, content: noteForm.content });
                   else addNote(noteForm.title, noteForm.content);
@@ -450,16 +1139,16 @@ const App = () => {
     );
   } else if (menuId === MenuIDs.LOCATION_INPUT) {
     ScreenComponent = (
-      <div className="w-full h-full flex flex-col" style={{ background: 'var(--ipod-bg)' }}>
+      <div className="w-full h-full bg-white flex flex-col">
         <StatusBar
           title="Set Location"
           isPlaying={music.isPlaying}
           hasActiveTrack={!!music.currentTrack}
           theme="light"
         />
-        <div className="flex-1 flex flex-col justify-center p-[var(--space-4)]">
+        <div className="flex-1 flex flex-col justify-center p-4">
           <input
-            className="border-[1px] border-[var(--apple-gray-separator)] p-[var(--space-3)] rounded-[var(--radius-sm)] w-full text-[16px] text-[var(--ipod-text)] focus:border-[var(--apple-blue)] outline-none bg-[var(--ipod-bg)] mb-[var(--space-4)]"
+            className="border p-2 rounded w-full text-black mb-4"
             placeholder="City Name"
             value={locationInput}
             onChange={(e) => setLocationInput(e.target.value)}
@@ -471,8 +1160,8 @@ const App = () => {
             }}
             autoFocus
           />
-          <div className="flex gap-[var(--space-2)]">
-            <button onClick={goBack} className="bg-[var(--apple-gray-separator)] text-[var(--ipod-text)] p-[var(--space-3)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform">
+          <div className="flex gap-2">
+            <button onClick={goBack} className="bg-gray-300 text-black p-2 rounded flex-1">
               Cancel
             </button>
             <button
@@ -480,7 +1169,7 @@ const App = () => {
                 setClockSettings((s) => ({ ...s, location: locationInput }));
                 goBack();
               }}
-              className="bg-[var(--apple-blue)] text-[var(--apple-white)] p-[var(--space-3)] rounded-[var(--radius-sm)] flex-1 active:scale-[0.98] transition-transform shadow-sm"
+              className="bg-blue-500 text-white p-2 rounded flex-1"
             >
               Save
             </button>
@@ -502,19 +1191,19 @@ const App = () => {
             <input
               className="w-full px-4 py-4 text-lg font-semibold text-gray-900 placeholder-gray-400 border-none outline-none bg-white"
               placeholder="Search songs..."
-              value={search.playlistSearchQuery}
-              onChange={(e) => search.setPlaylistSearchQuery(e.target.value)}
+              value={playlistSearchQuery}
+              onChange={(e) => setPlaylistSearchQuery(e.target.value)}
               autoFocus
             />
           </div>
           <MenuScreen
             title=""
             items={currentMenuItems}
-            selectedIndex={selectedIndex}
+            selectedIndex={navState.selectedIndex}
             onItemClick={(idx) => {
               selectIndex(idx);
               const item = currentMenuItems[idx];
-              if (item?.action) item.action();
+              if (item) executeItemAction(item);
             }}
             isPlaying={music.isPlaying}
             hasActiveTrack={!!music.currentTrack}
@@ -537,18 +1226,17 @@ const App = () => {
                   ? 'Music'
                   : menuId === MenuIDs.BACKLIGHT_SETTINGS
                     ? 'Backlight Timer'
-                    : (menuId as string)
+                    : menuId
                         .toLowerCase()
                         .replace(/_/g, ' ')
                         .replace(/\b\w/g, (l) => l.toUpperCase())
         }
         items={currentMenuItems}
-        selectedIndex={selectedIndex}
+        selectedIndex={navState.selectedIndex}
         onItemClick={(idx) => {
           selectIndex(idx);
           const item = currentMenuItems[idx];
-          if (item?.action) item.action();
-          else if (item?.targetMenuId) navigateTo(item.targetMenuId as MenuIDs);
+          if (item) executeItemAction(item);
         }}
         isPlaying={music.isPlaying}
         hasActiveTrack={!!music.currentTrack}
@@ -577,12 +1265,12 @@ const App = () => {
             className="absolute overflow-hidden"
             style={{
               top: '24px',
-              left: '16px',
+              left: '12px',
               width: '310px',
-              height: '340px',
-              border: '8px solid var(--ipod-screen-border)',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--apple-black)',
+              height: '339px',
+              border: '8px solid #000000',
+              borderRadius: '5px',
+              background: '#000',
               boxSizing: 'content-box',
             }}
           >
@@ -616,9 +1304,9 @@ const App = () => {
             className="absolute"
             style={{
               top: '407px',
-              left: '54px', // Standardized whole number (358 - 250) / 2
-              width: '250px',
-              height: '250px',
+              left: 'calc(50% - 125.46px + 0.46px)',
+              width: '250.92px',
+              height: '250.92px',
             }}
           >
             <ClickWheel

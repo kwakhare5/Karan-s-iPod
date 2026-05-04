@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { StatusBar } from '../core/StatusBar';
+import { StatusBar } from './StatusBar';
 import { Search, Loader2 } from 'lucide-react';
-import { Track } from '../../types';
+import { Track } from '../types';
 
 interface SearchScreenProps {
   selectedIndex: number;
@@ -94,7 +94,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     } else if (isItemBelowView) {
       container.scrollTop = Math.min(
         container.scrollHeight - containerHeight,
-        itemTop + itemHeight - containerHeight,
+        itemTop + itemHeight - containerHeight
       );
     }
   }, [selectedIndex, results.length]);

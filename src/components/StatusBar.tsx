@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {} from 'lucide-react';
 
 interface StatusBarProps {
   title: string;
@@ -32,27 +33,28 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
     }, []);
 
     const defaultLightBg = 'linear-gradient(180deg, #F0F0F0 0%, #C8C8C8 100%)';
-    const defaultDarkBg = 'linear-gradient(180deg, #404040 0%, #1A1A1A 100%)';
+    const defaultDarkBg = 'linear-gradient(180deg, #505050 0%, #292929 100%)';
     const activeBackground = background || (theme === 'dark' ? defaultDarkBg : defaultLightBg);
-    const textColor = theme === 'dark' ? 'var(--apple-white)' : 'var(--apple-black)';
+    const textColor = theme === 'dark' ? '#FFFFFF' : '#000000';
 
     return (
       <div
         className="w-full flex items-center justify-between shrink-0 z-20 select-none overflow-hidden"
         style={{
-          height: '40px',
+          height: '42px',
           background: activeBackground,
-          padding: '0 var(--space-3)',
+          padding: '0 12px',
           boxSizing: 'border-box',
           borderBottom: '1px solid rgba(0,0,0,0.15)',
         }}
       >
         {/* Left - Clock */}
-        <div style={{ width: '80px', height: '100%', display: 'flex', alignItems: 'center' }}>
+        <div style={{ width: '82px', height: '100%', display: 'flex', alignItems: 'center' }}>
           <span
             style={{
-              fontWeight: 'var(--font-weight-bold)',
-              fontSize: '16px',
+              fontFamily: 'Inter, -apple-system, sans-serif',
+              fontWeight: 700,
+              fontSize: '17px',
               color: textColor,
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
@@ -63,11 +65,12 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
         </div>
 
         {/* Center - Title */}
-        <div className="flex-1 flex items-center justify-center h-full overflow-hidden mx-[var(--space-2)]">
+        <div className="flex-1 flex items-center justify-center h-full overflow-hidden">
           <span
             style={{
-              fontWeight: 'var(--font-weight-bold)',
-              fontSize: '17px',
+              fontFamily: 'Inter, -apple-system, sans-serif',
+              fontWeight: 700,
+              fontSize: '18px',
               color: textColor,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -175,5 +178,5 @@ export const StatusBar: React.FC<StatusBarProps> = React.memo(
         </div>
       </div>
     );
-  },
+  }
 );

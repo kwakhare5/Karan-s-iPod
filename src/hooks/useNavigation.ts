@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { MenuIDs, NavigationState } from '../../types';
+import { MenuIDs, NavigationState } from '../types';
 
 export const useNavigation = () => {
   const [savedIndices, setSavedIndices] = useState<Record<string, number>>({});
