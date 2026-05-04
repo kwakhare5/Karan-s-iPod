@@ -1,0 +1,6 @@
+- [x] Add `kill` and `save` scripts to `package.json`
+- [x] Initialize `walkthrough.md`
+- [x] Perform `@AUDIT` and create `AUDIT.md`
+- [x] Fix audit findings one by one (Silent Catches)
+- [x] Fix audit findings one by one (Rule-Compliant Comments)
+- [/] Final push to GitHub
