@@ -64,7 +64,7 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           }}
           className={`${buttonStyle} left-1/2 -translate-x-1/2`}
           style={{
-            top: '20px', // Optically centered
+            top: '20px',
             width: '60px',
             height: '40px',
             color: COLOR_NORMAL,
@@ -91,9 +91,9 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           }}
           className={`${buttonStyle} top-1/2 -translate-y-1/2`}
           style={{
-            left: '18px',
-            width: '50px',
-            height: '50px',
+            left: '20px',
+            width: '40px',
+            height: '40px',
             color: COLOR_NORMAL,
           }}
         >
@@ -112,9 +112,9 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           }}
           className={`${buttonStyle} top-1/2 -translate-y-1/2`}
           style={{
-            right: '18px',
-            width: '50px',
-            height: '50px',
+            right: '20px',
+            width: '40px',
+            height: '40px',
             color: COLOR_NORMAL,
           }}
         >
@@ -133,9 +133,9 @@ export const ClickWheel = React.memo<ClickWheelProps>(
           }}
           className={`${buttonStyle} left-1/2 -translate-x-1/2 items-end gap-1`}
           style={{
-            top: '200px', // Balanced against MENU
+            top: '190px',
             width: '60px',
-            height: '30px',
+            height: '40px',
             color: COLOR_NORMAL,
           }}
         >
