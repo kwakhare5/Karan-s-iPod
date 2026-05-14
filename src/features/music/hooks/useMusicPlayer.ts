@@ -74,7 +74,7 @@ export const useMusicPlayer = () => {
           duration: item.duration,
           thumbnailUrl: item.thumbnail,
           album: 'Unknown',
-        })
+        }),
       );
     } catch {
       return [];
@@ -121,7 +121,7 @@ export const useMusicPlayer = () => {
         fetchRelated(track.artist).then((related) => {
           if (related.length > 0) {
             const uniqueNew = related.filter(
-              (t) => !queue.some((ext) => ext.videoId === t.videoId)
+              (t) => !queue.some((ext) => ext.videoId === t.videoId),
             );
             if (uniqueNew.length > 0) {
               setState((prev: MusicPlayerState) => ({
@@ -133,7 +133,7 @@ export const useMusicPlayer = () => {
         });
       }
     },
-    [] // playFromQueue is stable; it reads state via setState callbacks
+    [], // playFromQueue is stable; it reads state via setState callbacks
   );
 
   const handleTrackEnd = useCallback(() => {
@@ -171,7 +171,7 @@ export const useMusicPlayer = () => {
         playQueueRef.current = null;
       }
     },
-    [state.volume, playFromQueue]
+    [state.volume, playFromQueue],
   );
 
   const onPlayerStateChange = useCallback(
@@ -218,7 +218,7 @@ export const useMusicPlayer = () => {
           break;
       }
     },
-    [handleTrackEnd, state.volume]
+    [handleTrackEnd, state.volume],
   );
 
   const onPlayerError = useCallback((event: YTPlayerEvent) => {
@@ -366,7 +366,7 @@ export const useMusicPlayer = () => {
         playFromQueue(q, idx);
       }, 0);
     },
-    [playFromQueue]
+    [playFromQueue],
   );
 
   const togglePlayPause = useCallback(() => {

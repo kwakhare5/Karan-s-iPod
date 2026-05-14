@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React from 'react';
 import { MenuIDs, MenuItem, Track, ClockSettings } from '@shared/types';
 import { MenuScreen } from '@features/navigation/components/MenuScreen';
@@ -85,7 +85,6 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
   setLocationInput,
   playlistSearchQuery,
   setPlaylistSearchQuery,
-  handlePlaylistSearchSelect,
 }) => {
   const menuId = navState.currentMenuId;
 
@@ -170,7 +169,7 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
             <div className="flex items-center px-4 py-2 border-b border-[#F2F2F7]">
               <span className="w-20 text-xs font-bold text-[#8e8e93] uppercase">First</span>
               <input
-                className="flex-1 bg-transparent py-1 text-[17px] text-black focus:outline-none font-semibold"
+                className="flex-1 bg-transparent py-1 text-[16px] text-black focus:outline-none font-semibold"
                 placeholder="Required"
                 value={contactForm.firstName}
                 onChange={(e) => setContactForm((s: any) => ({ ...s, firstName: e.target.value }))}
@@ -179,7 +178,7 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
             <div className="flex items-center px-4 py-2 border-b border-[#F2F2F7]">
               <span className="w-20 text-xs font-bold text-[#8e8e93] uppercase">Last</span>
               <input
-                className="flex-1 bg-transparent py-1 text-[17px] text-black focus:outline-none font-semibold"
+                className="flex-1 bg-transparent py-1 text-[16px] text-black focus:outline-none font-semibold"
                 placeholder="Optional"
                 value={contactForm.lastName}
                 onChange={(e) => setContactForm((s: any) => ({ ...s, lastName: e.target.value }))}
@@ -188,7 +187,7 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
             <div className="flex items-center px-4 py-2 border-b border-[#F2F2F7]">
               <span className="w-20 text-xs font-bold text-[#8e8e93] uppercase">Phone</span>
               <input
-                className="flex-1 bg-transparent py-1 text-[17px] text-black focus:outline-none font-semibold"
+                className="flex-1 bg-transparent py-1 text-[16px] text-black focus:outline-none font-semibold"
                 placeholder="Add Phone"
                 value={contactForm.phone}
                 onChange={(e) => setContactForm((s: any) => ({ ...s, phone: e.target.value }))}
@@ -197,7 +196,7 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
             <div className="flex items-center px-4 py-2">
               <span className="w-20 text-xs font-bold text-[#8e8e93] uppercase">Email</span>
               <input
-                className="flex-1 bg-transparent py-1 text-[17px] text-black focus:outline-none font-semibold"
+                className="flex-1 bg-transparent py-1 text-[16px] text-black focus:outline-none font-semibold"
                 placeholder="Add Email"
                 value={contactForm.email}
                 onChange={(e) => setContactForm((s: any) => ({ ...s, email: e.target.value }))}
@@ -349,7 +348,7 @@ export const ScreenRouter: React.FC<ScreenRouterProps> = ({
                   : menuId
                       .toLowerCase()
                       .replace(/_/g, ' ')
-                      .replace(/\b\w/g, (l) => l.toUpperCase())
+                      .replace(/\b\w/g, (l: string) => l.toUpperCase())
       }
       items={currentMenuItems}
       selectedIndex={navState.selectedIndex}

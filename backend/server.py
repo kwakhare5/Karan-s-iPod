@@ -354,37 +354,24 @@ def piped_stream_manual(video_id):
 
 
 # ================================================
-#             PLAYLISTS & LIBRARY
+#              PLAYLISTS & LIBRARY
 # ================================================
 
 PLAYLISTS_FILE = "public/playlists.json"
-
 
 def load_playlists():
     if not os.path.exists(PLAYLISTS_FILE):
         return []
     try:
-        with open(
-            PLAYLISTS_FILE, 'r', encoding='utf-8'
-        ) as f:
+        with open(PLAYLISTS_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception:
         return []
 
-
 def save_playlists(playlists):
-    os.makedirs(
-        os.path.dirname(PLAYLISTS_FILE),
-        exist_ok=True,
-    )
-    with open(
-        PLAYLISTS_FILE, 'w', encoding='utf-8'
-    ) as f:
-        json.dump(
-            playlists, f,
-            indent=2, ensure_ascii=False,
-        )
-
+    os.makedirs(os.path.dirname(PLAYLISTS_FILE), exist_ok=True)
+    with open(PLAYLISTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(playlists, f, indent=2, ensure_ascii=False)
 
 @app.route('/api/playlists', methods=['GET', 'POST'])
 def handle_playlists():
@@ -394,9 +381,7 @@ def handle_playlists():
     if request.method == 'POST':
         name = request.json.get('name')
         if not name:
-            return jsonify(
-                {'error': 'Name required'}
-            ), 400
+            return jsonify({'error': 'Name required'}), 400
         new_playlist = {
             'id': str(uuid.uuid4()),
             'name': name,
@@ -407,58 +392,37 @@ def handle_playlists():
         return jsonify(new_playlist)
     return jsonify({'error': 'Bad request'}), 400
 
-
-@app.route(
-    '/api/playlists/<playlist_id>/add',
-    methods=['POST'],
-)
+@app.route('/api/playlists/<playlist_id>/add', methods=['POST'])
 def add_to_playlist(playlist_id):
     playlists = load_playlists()
     song_id = request.json.get('songId')
     if not song_id:
-        return jsonify(
-            {'error': 'songId required'}
-        ), 400
+        return jsonify({'error': 'songId required'}), 400
     for p in playlists:
         if p['id'] == playlist_id:
             if song_id not in p.get('songIds', []):
-                p.setdefault(
-                    'songIds', []
-                ).append(song_id)
+                p.setdefault('songIds', []).append(song_id)
             save_playlists(playlists)
             return jsonify(p)
-    return jsonify(
-        {'error': 'Playlist not found'}
-    ), 404
+    return jsonify({'error': 'Playlist not found'}), 404
 
-
-@app.route(
-    '/api/playlists/<playlist_id>',
-    methods=['PUT', 'DELETE'],
-)
+@app.route('/api/playlists/<playlist_id>', methods=['PUT', 'DELETE'])
 def update_or_delete_playlist(playlist_id):
     playlists = load_playlists()
     if request.method == 'DELETE':
-        playlists = [
-            p for p in playlists
-            if p['id'] != playlist_id
-        ]
+        playlists = [p for p in playlists if p['id'] != playlist_id]
         save_playlists(playlists)
         return jsonify({'success': True})
     if request.method == 'PUT':
         name = request.json.get('name')
         if not name:
-            return jsonify(
-                {'error': 'Name required'}
-            ), 400
+            return jsonify({'error': 'Name required'}), 400
         for p in playlists:
             if p['id'] == playlist_id:
                 p['name'] = name
                 save_playlists(playlists)
                 return jsonify(p)
-    return jsonify(
-        {'error': 'Playlist not found'}
-    ), 404
+    return jsonify({'error': 'Playlist not found'}), 404
 
 
 @app.route('/api/genres')

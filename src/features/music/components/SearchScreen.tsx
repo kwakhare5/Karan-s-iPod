@@ -184,12 +184,12 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                     </div>
                     <div className="flex-1 flex flex-col justify-center min-w-0">
                       <div
-                        className={`font-semibold text-[17px] tracking-tight truncate leading-tight ${active ? 'text-white' : 'text-black'}`}
+                        className={`font-semibold text-[16px] tracking-tight truncate leading-tight ${active ? 'text-white' : 'text-black'}`}
                       >
                         {track.title || 'Unknown Song'}
                       </div>
                       <div
-                        className={`text-[13px] truncate mt-0.5 ${active ? 'text-white/90' : 'text-[#8e8e93]'}`}
+                        className={`text-[14px] truncate mt-0.5 ${active ? 'text-white/90' : 'text-[#8e8e93]'}`}
                       >
                         {track.artist || 'Unknown Artist'}{' '}
                         {track.duration > 0 && `• ${formatDuration(track.duration)}`}

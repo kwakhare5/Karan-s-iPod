@@ -37,8 +37,8 @@ export const useContacts = () => {
     };
     setContacts((prev) =>
       [...prev, newContact].sort((a, b) =>
-        `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
-      )
+        `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
+      ),
     );
     return newContact;
   }, []);
@@ -48,8 +48,8 @@ export const useContacts = () => {
       prev
         .map((c) => (c.id === id ? { ...c, ...updates } : c))
         .sort((a, b) =>
-          `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
-        )
+          `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
+        ),
     );
   }, []);
 
@@ -61,12 +61,12 @@ export const useContacts = () => {
     (id: string) => {
       return contacts.find((c) => c.id === id) || null;
     },
-    [contacts]
+    [contacts],
   );
 
   // Always sorted alphabetically - create a copy to avoid mutating state
   const sortedContacts = [...contacts].sort((a, b) =>
-    `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`)
+    `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
   );
 
   return {
